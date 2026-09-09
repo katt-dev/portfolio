@@ -216,3 +216,10 @@
 
 /* display:grid у .ed-body перебивает атрибут hidden — возвращаем ему силу */
 .ed-body[hidden] { display: none; }
+
+/* Галочка-переключатель в редакторе */
+.ed-check {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; cursor: pointer; user-select: none;
+}
+.ed-check input { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }

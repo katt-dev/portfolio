@@ -18,6 +18,8 @@
 import { useEffect, useState, useRef } from "react";
 import { STATUS, type Lang, type Project } from "./settings";
 import { loadContent, type SiteContent } from "./contentStore";
+import { detectService, resolveUrl } from "./contacts";
+import ContactIcon from "./ContactIcon";
 import { loadProjects } from "./projectsStore";
 import { checkAccessFromUrl } from "./adminAccess";
 import ProjectModal from "./ProjectModal";
@@ -42,6 +44,7 @@ export default function App() {
   });
 
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [copied, setCopied] = useState("");
   const settingsRef = useRef<HTMLDivElement>(null);
 
   const [projects, setProjects] = useState<Project[]>(() => loadProjects());
@@ -276,14 +279,65 @@ export default function App() {
             </a>
           )}
 
-          {/* Контакты: каждая строка из настроек — отдельная заметная плашка */}
-          {content.discord.trim() && (
-            <ul className="contacts">
-              {content.discord.split("\n").map((l) => l.trim()).filter(Boolean).map((line, i) => (
-                <li className="contacts__item" key={i}>{line}</li>
-              ))}
-            </ul>
-          )}
+          {/* Контакты. Есть ссылка — открываем её, нет — копируем значение
+              (у Discord, например, публичной ссылки на профиль не бывает). */}
+          {content.contacts.length > 0 && (() => {
+            const items = content.contacts
+              .filter((c) => c.value.trim())
+              .map((c) => ({ ...c, href: resolveUrl(c), service: detectService(c) }));
+            if (!items.length) return null;
+
+            return (
+              <>
+                {content.showContactHint && (
+                  <p className="contacts__hint mono">
+                    {items.some((c) => c.href) ? copy.contactsHint : copy.contactsCopy}
+                  </p>
+                )}
+                <ul className="contacts">
+                  {items.map((c, i) => {
+                    const inner = (<>
+                      <span className="contacts__brand" aria-hidden="true">
+                        <ContactIcon service={c.service} />
+                      </span>
+                      <span className="contacts__text">
+                        {c.label && <span className="contacts__label">{c.label}</span>}
+                        <span className="contacts__value">{c.value}</span>
+                      </span>
+                      <span className="contacts__go" aria-hidden="true">
+                        {c.href
+                          ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>
+                          : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>}
+                      </span>
+                    </>);
+
+                    return (
+                      <li key={i}>
+                        {c.href ? (
+                          <a className={`contacts__item contacts__item--${c.service}`} href={c.href} target="_blank" rel="noopener noreferrer"
+                             title={copy.contactsHint}>
+                            {inner}
+                          </a>
+                        ) : (
+                          <button type="button" className={`contacts__item contacts__item--${c.service}`} title={copy.contactsCopy}
+                            onClick={() => {
+                              navigator.clipboard?.writeText(c.value).then(
+                                () => { setCopied(c.value); window.setTimeout(() => setCopied(""), 1800); },
+                                () => { /* браузер не дал доступ к буферу */ },
+                              );
+                            }}>
+                            {inner}
+                            {copied === c.value && <span className="contacts__copied">{copy.contactsCopied}</span>}
+                          </button>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </>
+            );
+          })()}
+
           <p style={{ color: "var(--text-soft)", fontSize: 17, marginTop: 20, maxWidth: "50ch" }}>{copy.contactNote}</p>
         </section>
       </main>

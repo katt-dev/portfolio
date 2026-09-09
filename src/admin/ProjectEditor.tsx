@@ -28,6 +28,7 @@ import {
 } from "../contentStore";
 import ImageDrop from "./ImageDrop";
 import ProjectModal from "../ProjectModal";
+import { resolveUrl } from "../contacts";
 import { ED } from "./editorTexts";
 import { actionsUrl, getToken, maskToken, publishFiles, setToken } from "./publish";
 import "./editor.css";
@@ -278,8 +279,62 @@ export default function ProjectEditor({ projects, setProjects, content, setConte
             </div>
             <Text label={t.ed_f_badge} value={content.badge}
               onChange={(badge) => commitContent({ ...content, badge })} />
-            <Text label={t.ed_f_discord} value={content.discord} area
-              onChange={(discord) => commitContent({ ...content, discord })} />
+            <h3 className="ed-section">{t.ed_contacts}</h3>
+            <p className="ed-hint">{t.ed_cHint}</p>
+            <label className="ed-check">
+              <input type="checkbox" checked={content.showContactHint}
+                onChange={(e) => commitContent({ ...content, showContactHint: e.target.checked })} />
+              <span>{t.ed_hintToggle}</span>
+            </label>
+            {content.contacts.map((c, i) => {
+              const upd = (patchItem: Partial<typeof c>) =>
+                commitContent({
+                  ...content,
+                  contacts: content.contacts.map((x, k) => (k === i ? { ...x, ...patchItem } : x)),
+                });
+              return (
+                <div className="ed-sub" key={i}>
+                  <div className="ed-sub__head">
+                    <span className="ed-label">#{i + 1}</span>
+                    <div className="ed-item__side">
+                      <button type="button" className="ed-icon" title={t.ed_up} disabled={i === 0}
+                        onClick={() => {
+                          const next = [...content.contacts];
+                          [next[i - 1], next[i]] = [next[i], next[i - 1]];
+                          commitContent({ ...content, contacts: next });
+                        }}>&#8593;</button>
+                      <button type="button" className="ed-icon" title={t.ed_down}
+                        disabled={i === content.contacts.length - 1}
+                        onClick={() => {
+                          const next = [...content.contacts];
+                          [next[i + 1], next[i]] = [next[i], next[i + 1]];
+                          commitContent({ ...content, contacts: next });
+                        }}>&#8595;</button>
+                      <button type="button" className="ed-icon ed-icon--danger" title={t.ed_remove}
+                        onClick={() => commitContent({
+                          ...content,
+                          contacts: content.contacts.filter((_, k) => k !== i),
+                        })}>&#10005;</button>
+                    </div>
+                  </div>
+                  <div className="ed-row2">
+                    <Text label={t.ed_f_cLabel} value={c.label} onChange={(label) => upd({ label })} />
+                    <Text label={t.ed_f_cValue} value={c.value} onChange={(value) => upd({ value })} />
+                  </div>
+                  <Text label={t.ed_f_cUrl} value={c.url} onChange={(url) => upd({ url })} />
+                  <span className="ed-hint">
+                    {resolveUrl(c) || t.ed_f_cValue}
+                  </span>
+                </div>
+              );
+            })}
+            <button type="button" className="ed-btn"
+              onClick={() => commitContent({
+                ...content,
+                contacts: [...content.contacts, { label: "", value: "", url: "" }],
+              })}>
+              + {t.ed_addContact}
+            </button>
             <ImageDrop
               label={t.ed_f_portrait}
               value={content.portrait}

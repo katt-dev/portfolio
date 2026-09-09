@@ -105,7 +105,6 @@ export interface Project {
 // (вкладка «Сайт»). Руками файл трогать не нужно, но можно.
 export const NAME:     string = contentData.name;
 export const EMAIL:    string = contentData.email;    // пусто "" -> кнопки «написать» скрыты
-export const DISCORD:  string = contentData.discord;  // строка под почтой в «Контактах»
 export const BADGE:    string = contentData.badge;
 export const PORTRAIT: string = contentData.portrait; // портрет на главном экране
 

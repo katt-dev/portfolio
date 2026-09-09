@@ -10,6 +10,7 @@
 import contentData from "./content.json";
 import type { Lang } from "./settings";
 import { isAdminUnlocked } from "./adminAccess";
+import { parseLegacyContacts, type ContactItem } from "./contacts";
 
 export const CONTENT_KEY = "katt.content.v1";
 
@@ -19,9 +20,11 @@ export type UiBlock = (typeof contentData)["ui"]["ru"];
 export interface SiteContent {
   name: string;
   email: string;
-  discord: string;
   badge: string;
   portrait: string;
+  contacts: ContactItem[];
+  /** Показывать ли подсказку «нажми, чтобы открыть» над контактами. */
+  showContactHint: boolean;
   ui: Record<Lang, UiBlock>;
 }
 
@@ -50,12 +53,26 @@ export function normalizeContent(v: unknown): SiteContent {
     return out as UiBlock;
   };
 
+  // Раньше контакты были одной строкой (поле discord). Старые черновики
+  // в браузере продолжают работать — строка разбирается в список.
+  const legacy = (o as Record<string, unknown>).discord;
+  const contacts: ContactItem[] = Array.isArray(o.contacts)
+    ? o.contacts.map((c) => {
+        const x = (c ?? {}) as Partial<ContactItem>;
+        return { label: str(x.label), value: str(x.value), url: str(x.url) };
+      })
+    : typeof legacy === "string"
+      ? parseLegacyContacts(legacy)
+      : base.contacts;
+
   return {
     name: str(o.name, base.name),
     email: str(o.email, base.email),
-    discord: str(o.discord, base.discord),
     badge: str(o.badge, base.badge),
     portrait: str(o.portrait, base.portrait),
+    contacts,
+    showContactHint:
+      typeof o.showContactHint === "boolean" ? o.showContactHint : base.showContactHint,
     ui: { ru: block("ru"), en: block("en") },
   };
 }
@@ -129,4 +146,7 @@ export const FIELD_LABELS: Record<string, { ru: string; en: string }> = {
   themeAria:   { ru: "Подпись кнопки темы",         en: "Theme button label" },
   settingsAria:{ ru: "Подпись кнопки настроек",     en: "Settings button label" },
   editorBtn:   { ru: "Кнопка редактора",            en: "Editor button" },
+  contactsHint:  { ru: "Подсказка над контактами (ссылка)", en: "Contacts hint (link)" },
+  contactsCopy:  { ru: "Подсказка над контактами (копирование)", en: "Contacts hint (copy)" },
+  contactsCopied:{ ru: "Сообщение «скопировано»",   en: "Copied message" },
 };

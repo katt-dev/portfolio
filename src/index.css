@@ -721,24 +721,74 @@ h1, h2, h3, p, a, span { overflow-wrap: break-word; }
    капсом. Теперь каждая строка — отдельная плашка обычным регистром.
    =========================================================================== */
 .contacts {
-  list-style: none; margin: 24px 0 0; padding: 0;
+  list-style: none; margin: 14px 0 0; padding: 0;
   display: flex; flex-wrap: wrap; gap: 10px;
 }
+.contacts__hint {
+  margin: 22px 0 0; color: var(--text-muted);
+}
 .contacts__item {
+  --brand: var(--text-muted);   /* цвет сервиса, переопределяется ниже */
+  position: relative;
+  display: inline-flex; align-items: center; gap: 11px;
   font-family: "JetBrains Mono", monospace;
-  font-size: 14px; letter-spacing: 0.02em; line-height: 1.4;
-  color: var(--text);
+  font-size: 14px; letter-spacing: 0.02em; line-height: 1.3;
+  color: var(--text); text-decoration: none; text-align: left;
   background: var(--surface);
   border: 1px solid var(--line-strong);
-  border-left: 3px solid var(--accent);
+  border-left: 3px solid var(--brand);
   border-radius: var(--radius);
-  padding: 11px 14px;
-  transition: border-color 0.25s var(--ease), transform 0.25s var(--ease);
+  padding: 10px 14px; cursor: pointer;
+  transition: border-color 0.25s var(--ease), transform 0.25s var(--ease),
+              background 0.25s var(--ease), box-shadow 0.25s var(--ease);
 }
-.contacts__item:hover {
-  border-color: var(--accent);
+.contacts__item:hover,
+.contacts__item:focus-visible {
+  border-color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 12%, var(--surface));
   transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  outline: none;
 }
+.contacts__brand {
+  display: inline-flex; color: var(--brand); flex-shrink: 0;
+}
+.contacts__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.contacts__label {
+  font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-muted);
+}
+.contacts__value { font-weight: 500; }
+.contacts__go {
+  display: inline-flex; color: var(--text-muted); flex-shrink: 0;
+  transition: color 0.25s var(--ease), transform 0.25s var(--ease);
+}
+.contacts__item:hover .contacts__go { color: var(--brand); transform: translateX(2px); }
+
+/* Фирменные цвета. Для сервисов с чёрно-белым знаком (GitHub, X) берём
+   нейтральный оттенок — он одинаково читается в светлой и тёмной теме. */
+.contacts__item--telegram { --brand: #2aabee; }
+.contacts__item--discord  { --brand: #5865f2; }
+.contacts__item--github   { --brand: #8b949e; }
+.contacts__item--itch     { --brand: #fa5c5c; }
+.contacts__item--youtube  { --brand: #ff3b30; }
+.contacts__item--twitch   { --brand: #9146ff; }
+.contacts__item--vk       { --brand: #0077ff; }
+.contacts__item--x        { --brand: #71767b; }
+.contacts__item--steam    { --brand: #66c0f4; }
+.contacts__item--boosty   { --brand: #f15f2c; }
+.contacts__item--email    { --brand: var(--accent-2); }
+.contacts__item--link     { --brand: var(--text-muted); }
+
+/* «Скопировано» — всплывает над плашкой */
+.contacts__copied {
+  position: absolute; bottom: calc(100% + 6px); left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 9px; border-radius: var(--radius);
+  font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--bg); background: var(--text); white-space: nowrap;
+}
+
 @media (max-width: 560px) {
   .contacts { gap: 8px; }
   .contacts__item { font-size: 13px; padding: 10px 12px; width: 100%; }

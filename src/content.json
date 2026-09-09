@@ -1,9 +1,21 @@
 {
   "name": "katt",
   "email": "",
-  "discord": "Telegram: @katt_dev\nDiscord: @katt.dev",
   "badge": "Game Developer",
   "portrait": "https://allwebs.ru/images/2026/09/08/a5da47961c2b1621944291e9941d5015.png",
+  "contacts": [
+    {
+      "label": "Telegram",
+      "value": "@katt_dev",
+      "url": ""
+    },
+    {
+      "label": "Discord",
+      "value": "@katt.dev",
+      "url": ""
+    }
+  ],
+  "showContactHint": true,
   "ui": {
     "ru": {
       "firstName": "katt",
@@ -40,7 +52,10 @@
       "close": "Закрыть",
       "themeAria": "Сменить тему",
       "settingsAria": "Открыть настройки",
-      "editorBtn": "Редактор проектов"
+      "editorBtn": "Редактор проектов",
+      "contactsHint": "Нажми, чтобы открыть",
+      "contactsCopy": "Нажми, чтобы скопировать",
+      "contactsCopied": "Скопировано"
     },
     "en": {
       "firstName": "katt",
@@ -77,7 +92,10 @@
       "close": "Close",
       "themeAria": "Toggle theme",
       "settingsAria": "Open settings",
-      "editorBtn": "Project editor"
+      "editorBtn": "Project editor",
+      "contactsHint": "Click to open",
+      "contactsCopy": "Click to copy",
+      "contactsCopied": "Copied"
     }
   }
 }
