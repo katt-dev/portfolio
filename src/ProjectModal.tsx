@@ -110,15 +110,15 @@ export default function ProjectModal({ project, lang, copy, email, onClose }: Pr
 
             <div className="modal__info">
               <div>
-                <span className="project-card__num">GAME / {project.num} · {project.year} · {project.engine}</span>
+                <span className="meta-label">{[project.year, project.engine].filter(Boolean).join(" · ")}</span>
                 <h2 className="display" style={{ fontSize: "clamp(30px, 4vw, 46px)", margin: "8px 0 6px" }}>{project.title[lang]}</h2>
                 {project.subtitle[lang] && <p style={{ color: "var(--text-soft)", fontSize: 16, margin: 0 }}>{project.subtitle[lang]}</p>}
               </div>
 
               {/* Стадия проекта — только если указана */}
               {project.status && (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                  <span className="project-card__num">{copy.statusLabel}</span>
+                <div className="meta-row">
+                  <span className="meta-label">{copy.statusLabel}</span>
                   <span className={`status-chip status-chip--${project.status}`}>{STATUS[project.status][lang]}</span>
                 </div>
               )}
@@ -132,7 +132,7 @@ export default function ProjectModal({ project, lang, copy, email, onClose }: Pr
               {project.team.length > 0 && (<>
                 <div className="rule" />
                 <div>
-                  <span className="project-card__num">{copy.teamLabel}</span>
+                  <span className="meta-label">{copy.teamLabel}</span>
                   <div style={{ marginTop: 10 }}>
                     {project.team.map((c) => (
                       <div className="collab" key={c.name}>
@@ -162,9 +162,9 @@ export default function ProjectModal({ project, lang, copy, email, onClose }: Pr
               </>)}
 
               <div className="rule" />
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 13 }}>
-                <span className="project-card__num">{copy.roleLabel}</span>
-                <span style={{ fontWeight: 500 }}>{project.myRole[lang]}</span>
+              <div className="meta-row">
+                <span className="meta-label">{copy.roleLabel}</span>
+                <span className="meta-value">{project.myRole[lang]}</span>
               </div>
 
               {/* Кнопки площадок: Steam, itch.io, свой сайт — что добавишь,

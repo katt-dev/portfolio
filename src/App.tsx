@@ -120,8 +120,7 @@ export default function App() {
       </div>
       <div className="project-card__body">
         <div>
-          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
-            <span className="project-card__num">GAME / {p.num}</span>
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
             <svg className="project-card__arrow" width="18" height="10" viewBox="0 0 18 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 5h16M12 1l5 4-5 4" /></svg>
           </div>
           <h3 className="project-card__title">{p.title[lang]}</h3>

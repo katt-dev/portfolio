@@ -425,9 +425,8 @@ export default function ProjectEditor({ projects, setProjects, content, setConte
             {current && (
               <>
                 <h3 className="ed-section">{t.ed_fields}</h3>
-                <div className="ed-row4">
+                <div className="ed-row3">
                   <Text label={t.ed_f_id}     value={current.id}     onChange={(id) => patch({ id })} />
-                  <Text label={t.ed_f_num}    value={current.num}    onChange={(num) => patch({ num })} />
                   <Text label={t.ed_f_year}   value={current.year}   onChange={(year) => patch({ year })} />
                   <Text label={t.ed_f_engine} value={current.engine} onChange={(engine) => patch({ engine })} />
                 </div>
