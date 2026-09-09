@@ -365,6 +365,15 @@ body::after {
 .contact-btn:active { transform: translate(0,0); box-shadow: none; }
 .contact-btn--ghost { background: transparent; color: var(--text); }
 
+/* Кнопка-ссылка на игру / Steam — контурная, вторая по счёту */
+.contact-btn--link {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--text);
+  font-weight: 500;
+}
+.contact-btn--link:hover { color: #fff; }
+
 .nav-link {
   font-family: "JetBrains Mono", monospace;
   font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;

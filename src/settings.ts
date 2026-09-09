@@ -49,6 +49,14 @@ export interface Project {
   subtitle: TextPair;
   description: TextPair;
   myRole: TextPair;
+
+  // ССЫЛКА НА ИГРУ / СТРАНИЦУ В STEAM
+  //   linkUrl   — адрес страницы (например https://store.steampowered.com/app/... )
+  //               оставь "" (пустые кавычки), если ссылки нет — кнопка просто скроется
+  //   linkLabel — надпись на кнопке (ru / en)
+  linkUrl: string;
+  linkLabel: TextPair;
+
   images: ProjectImage[];
   team: TeamMember[];
 }
@@ -64,8 +72,7 @@ export const DISCORD    = "Discord: @katt.dev"; // строка под почт�
 export const BADGE      = "Game Developer";
 
 // Портрет на главном экране — вставь ссылку на своё фото:
-export const PORTRAIT   = "img/Kattav.png";
-
+export const PORTRAIT   = "https://allwebs.ru/images/2026/09/08/a5da47961c2b1621944291e9941d5015.png";// ============================================================================
 
 // ============================================================================
 //  2. ТЕКСТЫ САЙТА — все надписи, что видит посетитель (два языка)
@@ -125,8 +132,8 @@ export const UI = {
     clickHint:   "Click a card to open the case",
     aboutTitle:  "About",
     aboutSub:    "Short bio",
-    contactMe:   "Get in touch",
-    contactNote: "Open to interesting projects, consulting, and conversations about games. I usually reply within a day.",
+    contactMe:   "",
+    contactNote: "я пидорас",
     handmade:    "Made to order",
     teamLabel:   "Project team",
     roleLabel:   "My role",
@@ -160,22 +167,26 @@ export const PROJECTS: Project[] = [
     tags: ["Unity · C#", "Adventure", "Survival", "Steam Release"],
 
     // ▼▼▼ ОБЛОЖКА КАРТОЧКИ — меняй ссылку ниже ▼▼▼
-    cover: "img/Logo.png",
+    cover: "https://allwebs.ru/images/2026/09/08/14f4b94773a872806a5f8385f8abc186.png",
 
     title:       { ru: "ПиВорлд", en: "PiWorld" },
     subtitle:    { ru: "", en: "" },
     description: { ru: "", en: "" },
     myRole:      { ru: "General developer / Главный разработчик", en: "General developer / Lead Developer" },
 
+    // ССЫЛКА НА СТРАНИЦУ ИГРЫ (Steam / itch.io / сайт). Пусто = кнопка скрыта
+    linkUrl:     "https://store.steampowered.com/app/3167710/Piworld/",
+    linkLabel:   { ru: "Страница в Steam", en: "View on Steam" },
+
     images: [
-      { src: "img/screenshot.jpg", caption: { ru: "Меню", en: "Menu" } },
-      { src: "img/PiWorld.png", caption: { ru: "Страница в магазине", en: "Steam page" } },
+      { src: "https://allwebs.ru/images/2026/09/08/005dfe359ce32db63ade00aba6fb64c8.jpg", caption: { ru: "Меню", en: "Menu" } },
+      { src: "https://allwebs.ru/images/2026/09/08/5e773898998094456e2791ddd72859a9.png", caption: { ru: "Страница в магазине", en: "Steam page" } },
       { src: "", caption: { ru: "-", en: "-" } },
     ],
     team: [
-      { name: "Kippen",   role: { ru: "General Designer", en: "General Designer" }, avatar: "img/avatarka.png" },
-      { name: "Santiago",  role: { ru: "Server Developer",         en: "Server Developer" },         avatar: "" },
-      { name: "Serkov1ch", role: { ru: "Team Leader",      en: "Team Leader" },      avatar: "" },
+      { name: "Kippen",   role: { ru: "General Designer", en: "General Designer" }, avatar: "https://allwebs.ru/images/2026/09/08/395cbb25753439f45f604551eaba35ee.png" },
+      { name: "Santiago",  role: { ru: "Server Developer",         en: "Server Developer" },         avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg" },
+      { name: "Serkov1ch", role: { ru: "Team Leader",      en: "Team Leader" },      avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg" },
     ],
   },
   {
@@ -186,20 +197,24 @@ export const PROJECTS: Project[] = [
     tags: ["Unity · C#", "Tactical Roguelite", "Procedural"],
 
     // ▼▼▼ ОБЛОЖКА КАРТОЧКИ — меняй ссылку ниже ▼▼▼
-    cover: "https://images.pexels.com/photos/6893930/pexels-photo-6893930.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    cover: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png",
 
     title:       { ru: "Iron Convoy 2084", en: "Iron Convoy 2084" },
     subtitle:    { ru: "Тактический roguelite о бронепоезде в постапокалиптической пустоши", en: "Tactical roguelite about an armored train in a post-apocalyptic waste" },
     description: { ru: "Игрок управляет экипажем гигантского бронепоезда, модернизирует вагоны-турели и распределяет энергию реактора в реальном времени. Я спроектировал процедурную генерацию маршрутов, баллистику орудий и систему повреждений отсеков.", en: "The player runs the crew of a giant armored train, upgrades turret cars and allocates reactor power in real time. I designed procedural route generation, gun ballistics, and a compartment damage system." },
     myRole:      { ru: "Systems Designer & Lead Programmer", en: "Systems Designer & Lead Programmer" },
 
+    // ССЫЛКА НА СТРАНИЦУ ИГРЫ (Steam / itch.io / сайт). Пусто = кнопка скрыта
+    linkUrl:     "",
+    linkLabel:   { ru: "Страница в Steam", en: "View on Steam" },
+
     images: [
-      { src: "https://images.pexels.com/photos/6893930/pexels-photo-6893930.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", caption: { ru: "Тактическое управление вагонами", en: "Tactical control of the train cars" } },
-      { src: "https://images.pexels.com/photos/19880807/pexels-photo-19880807.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", caption: { ru: "Прототипирование отсеков", en: "Prototyping the compartments" } },
+      { src: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png", caption: { ru: "Тактическое управление вагонами", en: "Tactical control of the train cars" } },
+      { src: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png", caption: { ru: "Прототипирование отсеков", en: "Prototyping the compartments" } },
     ],
     team: [
-      { name: "Денис Ковалёв", role: { ru: "2D/3D Concept Artist", en: "2D/3D Concept Artist" }, avatar: "https://images.pexels.com/photos/9618108/pexels-photo-9618108.jpeg?auto=compress&cs=tinysrgb&dpr=1&h=200&w=280" },
-      { name: "Ольга Ветрова", role: { ru: "UI/UX & VFX Artist",   en: "UI/UX & VFX Artist" },   avatar: "https://images.pexels.com/photos/16886370/pexels-photo-16886370.jpeg?auto=compress&cs=tinysrgb&dpr=1&h=200&w=280" },
+      { name: "Денис Ковалёв", role: { ru: "2D/3D Concept Artist", en: "2D/3D Concept Artist" }, avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg" },
+      { name: "Ольга Ветрова", role: { ru: "UI/UX & VFX Artist",   en: "UI/UX & VFX Artist" },   avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg" },
     ],
   },
   {
@@ -210,20 +225,24 @@ export const PROJECTS: Project[] = [
     tags: ["Co-op Multiplayer", "Netcode", "Physics Stealth"],
 
     // ▼▼▼ ОБЛОЖКА КАРТОЧКИ — меняй ссылку ниже ▼▼▼
-    cover: "https://images.pexels.com/photos/16313654/pexels-photo-16313654.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    cover: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png",
 
     title:       { ru: "Kobold Protocol", en: "Kobold Protocol" },
     subtitle:    { ru: "Кооперативный стелс-экшен на 4 игроков с физикой окружения", en: "4-player co-op stealth-action with environmental physics" },
     description: { ru: "Командный стелс-экшен, где игроки проникают в процедурно генерируемые подземные комплексы. Написал сетевую синхронизацию физики предметов, голосовую рацию с затуханием звука по геометрии уровня и кооперативные гаджеты.", en: "A team stealth-action where players infiltrate procedurally generated underground complexes. I wrote networked physics sync for props, a voice radio that occludes by level geometry, and co-op gadgets." },
     myRole:      { ru: "Network & Gameplay Programmer", en: "Network & Gameplay Programmer" },
 
+    // ССЫЛКА НА СТРАНИЦУ ИГРЫ (Steam / itch.io / сайт). Пусто = кнопка скрыта
+    linkUrl:     "https://store.steampowered.com/",
+    linkLabel:   { ru: "Страница в Steam", en: "View on Steam" },
+
     images: [
-      { src: "https://images.pexels.com/photos/16313654/pexels-photo-16313654.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", caption: { ru: "Тестирование сетевой синхронизации", en: "Testing network synchronization" } },
-      { src: "https://images.pexels.com/photos/30143553/pexels-photo-30143553.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", caption: { ru: "Подземные лаборатории и ночное видение", en: "Underground labs and night vision" } },
+      { src: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png", caption: { ru: "Тестирование сетевой синхронизации", en: "Testing network synchronization" } },
+      { src: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png", caption: { ru: "Подземные лаборатории и ночное видение", en: "Underground labs and night vision" } },
     ],
     team: [
-      { name: "Артём Морозов", role: { ru: "Level Designer",    en: "Level Designer" },    avatar: "https://images.pexels.com/photos/16886374/pexels-photo-16886374.jpeg?auto=compress&cs=tinysrgb&dpr=1&h=200&w=280" },
-      { name: "Ксения Ли",    role: { ru: "Character Animator", en: "Character Animator" }, avatar: "https://images.pexels.com/photos/19880807/pexels-photo-19880807.jpeg?auto=compress&cs=tinysrgb&dpr=1&h=200&w=280" },
+      { name: "Артём Морозов", role: { ru: "Level Designer",    en: "Level Designer" },    avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg" },
+      { name: "Ксения Ли",    role: { ru: "Character Animator", en: "Character Animator" }, avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg" },
     ],
   },
   {
@@ -234,20 +253,24 @@ export const PROJECTS: Project[] = [
     tags: ["Action Slasher", "Custom Shaders", "Combat System"],
 
     // ▼▼▼ ОБЛОЖКА КАРТОЧКИ — меняй ссылку ниже ▼▼▼
-    cover: "https://images.pexels.com/photos/9618108/pexels-photo-9618108.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    cover: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png",
 
     title:       { ru: "Chronos Drift", en: "Chronos Drift" },
     subtitle:    { ru: "Динамичный слэшер с механикой перемотки времени в бою", en: "Fast slasher with a combat time-rewind mechanic" },
     description: { ru: "Боевая система строится на записи последних 5 секунд действий игрока и мгновенном создании временного клона, повторяющего удары. Сделал кастомную буферизацию трансформов и анимаций без просадки FPS.", en: "Combat is built around recording the last 5 seconds of player actions and spawning a time-clone that repeats the strikes. Custom transform and animation buffering, no FPS drop." },
     myRole:      { ru: "Combat Designer / Tech Artist", en: "Combat Designer / Tech Artist" },
 
+    // ССЫЛКА НА СТРАНИЦУ ИГРЫ (Steam / itch.io / сайт). Пусто = кнопка скрыта
+    linkUrl:     "https://store.steampowered.com/",
+    linkLabel:   { ru: "Страница в Steam", en: "View on Steam" },
+
     images: [
-      { src: "https://images.pexels.com/photos/9618108/pexels-photo-9618108.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", caption: { ru: "Шлейф временного клона", en: "Time-clone trail" } },
-      { src: "https://images.pexels.com/photos/30123507/pexels-photo-30123507.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", caption: { ru: "Хитбоксы и тайминги комбо", en: "Hitboxes and combo timings" } },
+      { src: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png", caption: { ru: "Шлейф временного клона", en: "Time-clone trail" } },
+      { src: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png", caption: { ru: "Хитбоксы и тайминги комбо", en: "Hitboxes and combo timings" } },
     ],
     team: [
-      { name: "Роман Белов",   role: { ru: "VFX & Shader Artist",    en: "VFX & Shader Artist" },    avatar: "https://images.pexels.com/photos/16886370/pexels-photo-16886370.jpeg?auto=compress&cs=tinysrgb&dpr=1&h=200&w=280" },
-      { name: "Марина Савина", role: { ru: "Композитор саундтрека",  en: "Composer" },               avatar: "https://images.pexels.com/photos/16313654/pexels-photo-16313654.jpeg?auto=compress&cs=tinysrgb&dpr=1&h=200&w=280" },
+      { name: "Роман Белов",   role: { ru: "VFX & Shader Artist",    en: "VFX & Shader Artist" },    avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg" },
+      { name: "Марина Савина", role: { ru: "Композитор саундтрека",  en: "Composer" },               avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg" },
     ],
   },
   {
@@ -258,19 +281,23 @@ export const PROJECTS: Project[] = [
     tags: ["Godot 4 · GDScript", "Narrative Puzzle", "Retro 3D"],
 
     // ▼▼▼ ОБЛОЖКА КАРТОЧКИ — меняй ссылку ниже ▼▼▼
-    cover: "https://images.pexels.com/photos/19880807/pexels-photo-19880807.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    cover: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png",
 
     title:       { ru: "Signal Lost: Station 9", en: "Signal Lost: Station 9" },
     subtitle:    { ru: "Ретро-футуристический детектив на полярной радиостанции", en: "Retro-futurist detective on a polar radio station" },
     description: { ru: "Игрок расшифровывает радиоперехваты на аналоговой аппаратуре 80-х годов, вращает антенны и сопоставляет координаты. Все приборы в комнате полностью интерактивны — каждый тумблер и осциллограф работают по законам радиотехники.", en: "The player decrypts radio intercepts on 1980s analog gear, rotates antennas and matches coordinates. Every device in the room is fully interactive — switches and oscilloscopes follow real radio physics." },
     myRole:      { ru: "Gameplay Programmer & Sound Integrator", en: "Gameplay Programmer & Sound Integrator" },
 
+    // ССЫЛКА НА СТРАНИЦУ ИГРЫ (Steam / itch.io / сайт). Пусто = кнопка скрыта
+    linkUrl:     "https://store.steampowered.com/",
+    linkLabel:   { ru: "Страница в Steam", en: "View on Steam" },
+
     images: [
-      { src: "https://images.pexels.com/photos/19880807/pexels-photo-19880807.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", caption: { ru: "Интерактивная радиорубка", en: "Interactive radio room" } },
-      { src: "https://images.pexels.com/photos/6893930/pexels-photo-6893930.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", caption: { ru: "Журнал дешифровки сигналов", en: "Signal decryption log" } },
+      { src: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png", caption: { ru: "Интерактивная радиорубка", en: "Interactive radio room" } },
+      { src: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png", caption: { ru: "Журнал дешифровки сигналов", en: "Signal decryption log" } },
     ],
     team: [
-      { name: "Павел Зотов", role: { ru: "3D Prop Artist", en: "3D Prop Artist" }, avatar: "https://images.pexels.com/photos/9618108/pexels-photo-9618108.jpeg?auto=compress&cs=tinysrgb&dpr=1&h=200&w=280" },
+      { name: "Павел Зотов", role: { ru: "3D Prop Artist", en: "3D Prop Artist" }, avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg" },
     ],
   },
   {
@@ -281,20 +308,24 @@ export const PROJECTS: Project[] = [
     tags: ["Unreal Plugin", "Tools Dev", "Open Source"],
 
     // ▼▼▼ ОБЛОЖКА КАРТОЧКИ — меняй ссылку ниже ▼▼▼
-    cover: "https://images.pexels.com/photos/30123507/pexels-photo-30123507.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    cover: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png",
 
     title:       { ru: "Boreal Dialogue Kit", en: "Boreal Dialogue Kit" },
     subtitle:    { ru: "Плагин для нелинейных диалогов и квестов в UE5 — Open Source", en: "Open-source UE5 plugin for branching dialogue and quests" },
     description: { ru: "Инструментарий для нашей команды и других инди-разработчиков. Позволяет сценаристам собирать ветвящиеся диалоги и условия квестов в нодовом графе с мгновенной проверкой переменных и экспортом локализации.", en: "A toolkit for our team and other indie developers. Writers assemble branching dialogue and quest conditions in a node graph with live variable checks and localization export." },
     myRole:      { ru: "Tools Programmer / Автор плагина", en: "Tools Programmer / Plugin author" },
 
+    // ССЫЛКА НА СТРАНИЦУ ИГРЫ (Steam / itch.io / сайт). Пусто = кнопка скрыта
+    linkUrl:     "https://github.com/",
+    linkLabel:   { ru: "Открыть исходники", en: "View source" },
+
     images: [
-      { src: "https://images.pexels.com/photos/30123507/pexels-photo-30123507.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", caption: { ru: "Нодовый граф диалогов в UE5", en: "Dialogue node graph in UE5" } },
-      { src: "https://images.pexels.com/photos/30143553/pexels-photo-30143553.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", caption: { ru: "Локализация и озвучка", en: "Localization and voiceover" } },
+      { src: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png", caption: { ru: "Нодовый граф диалогов в UE5", en: "Dialogue node graph in UE5" } },
+      { src: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png", caption: { ru: "Локализация и озвучка", en: "Localization and voiceover" } },
     ],
     team: [
-      { name: "Алиса Громова", role: { ru: "UX для сценаристов",          en: "Writer UX" },                avatar: "https://images.pexels.com/photos/16313654/pexels-photo-16313654.jpeg?auto=compress&cs=tinysrgb&dpr=1&h=200&w=280" },
-      { name: "Илья Сорокин",  role: { ru: "Техническая документация",    en: "Technical documentation" },  avatar: "https://images.pexels.com/photos/16886374/pexels-photo-16886374.jpeg?auto=compress&cs=tinysrgb&dpr=1&h=200&w=280" },
+      { name: "Алиса Громова", role: { ru: "UX для сценаристов",          en: "Writer UX" },                avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg" },
+      { name: "Илья Сорокин",  role: { ru: "Техническая документация",    en: "Technical documentation" },  avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg" },
     ],
   },
 ];

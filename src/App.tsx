@@ -339,6 +339,15 @@ export default function App() {
                   <span className="project-card__num">{copy.roleLabel}</span>
                   <span style={{ fontWeight: 500 }}>{active.myRole[lang]}</span>
                 </div>
+                {/* Кнопка со ссылкой на игру / страницу в Steam.
+                    Показывается только если в settings.ts заполнено linkUrl */}
+                {active.linkUrl && (
+                  <a className="contact-btn contact-btn--link" href={active.linkUrl} target="_blank" rel="noopener noreferrer">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>
+                    {active.linkLabel[lang]}
+                  </a>
+                )}
+
                 <a className="contact-btn" href={`mailto:${EMAIL}?subject=${encodeURIComponent(mailSubject(active.title[lang]))}`}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 8l-10 6L2 8"/></svg>
                   {copy.mailBtn}
