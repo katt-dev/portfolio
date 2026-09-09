@@ -13,6 +13,11 @@
       "label": "Discord",
       "value": "@katt.dev",
       "url": ""
+    },
+    {
+      "label": "Github",
+      "value": "ka1tt",
+      "url": ""
     }
   ],
   "showContactHint": true,
