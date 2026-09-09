@@ -8,9 +8,9 @@
     "ru": {
       "firstName": "katt",
       "lastName": "",
-      "logo": "katt",
+      "logo": "Katt",
       "location": "Ahaha Studio(Основная) · Ancy Forge Studio(Неофициальная)",
-      "heroBio": "Game Developer · C# · Unity · Godot 4",
+      "heroBio": "Разработчик · C# · Unity · Godot 4",
       "about": [
         "Я разработчик игр, специализирующийся на создании игр под ключ. ",
         "Самостоятельно занимаюсь практически всеми аспектами разработки - от проектирования игровой логики и интерфейса до работы с механиками, системами и визуальной частью.",
@@ -27,7 +27,7 @@
       "aboutSub": "Краткая биография",
       "tabTitle": "katt — Game Developer",
       "contactTitle": "Контакты",
-      "contactMe": "Связаться со мной",
+      "contactMe": "",
       "contactNote": "Открыт для интересных проектов, консультаций и разговоров о геймдеве. Обычно отвечаю в течение 3-х часов.",
       "handmade": "Сделано на заказ",
       "teamLabel": "Команда проекта",
@@ -45,15 +45,15 @@
     "en": {
       "firstName": "katt",
       "lastName": "",
-      "logo": "katt",
-      "location": "Studios: «Ahaha Studio» «Ancy Forge Studio»",
-      "heroBio": "Unity · Godot 4",
+      "logo": "Katt",
+      "location": "Ahaha Studio(Main) ·  Ancy Forge Studio(Non-Official)",
+      "heroBio": "Game Developer · C# · Unity · Godot 4",
       "about": [
-        "Coding in Python, C#, GDScript.",
-        "",
-        ""
+        "I am a game developer specializing in end-to-end game creation.",
+        "I handle virtually all aspects of development myself - from designing game logic and interfaces to working on mechanics, systems, and visuals.",
+        "The only area I do not cover is server - side development."
       ],
-      "navProjects": "Work",
+      "navProjects": "Projects",
       "navAbout": "About",
       "navContact": "Contact",
       "viewWork": "View projects",
@@ -64,7 +64,7 @@
       "aboutSub": "Short bio",
       "tabTitle": "katt — Game Developer",
       "contactTitle": "Contact",
-      "contactMe": "Get in touch",
+      "contactMe": "",
       "contactNote": "Open to interesting projects, consulting and gamedev talk. I usually reply within 3 hours.",
       "handmade": "Made to order",
       "teamLabel": "Project team",
