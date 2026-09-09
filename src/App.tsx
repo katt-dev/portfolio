@@ -251,8 +251,8 @@ export default function App() {
         </section>
 
         {/* ====== ОБО МНЕ ====== */}
-        <section id="about" className="wrap">
-          <div className="rule" style={{ marginBottom: 40 }} />
+        <section id="about" className="wrap wrap--divided">
+          <div className="rule section-rule" />
           <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 56px)", margin: 0 }}>{copy.aboutTitle}</h2>
           <span className="mono" style={{ color: "var(--text-muted)", display: "block", marginTop: 12 }}>{copy.aboutSub}</span>
           <div className="about-text">
@@ -261,8 +261,8 @@ export default function App() {
         </section>
 
         {/* ====== КОНТАКТЫ ====== */}
-        <section id="contact" className="wrap wrap--contact">
-          <div className="rule" style={{ marginBottom: 40 }} />
+        <section id="contact" className="wrap wrap--contact wrap--divided">
+          <div className="rule section-rule" />
           <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 56px)", margin: 0 }}>{copy.contactTitle}</h2>
           <span className="mono" style={{ color: "var(--text-muted)", display: "block", marginTop: 12 }}>{copy.contactMe}</span>
 
