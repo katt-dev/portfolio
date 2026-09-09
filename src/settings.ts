@@ -118,6 +118,8 @@ export const UI = {
     clickHint:   "Нажми на блок, чтобы открыть кейс",
     aboutTitle:  "Обо мне",
     aboutSub:    "Краткая биография",
+    // НАЗВАНИЕ ВКЛАДКИ БРАУЗЕРА (то, что видно на самой вкладке)
+    tabTitle:    "katt — Game Developer",
     contactTitle:"Контакты",
     contactMe:   "Связаться со мной",
     contactNote: "Открыт для интересных проектов, консультаций и разговоров о геймдеве. Обычно отвечаю в течение 3-х часов.",
@@ -200,6 +202,8 @@ export const UI = {
     clickHint:   "Click a card to open the case",
     aboutTitle:  "About",
     aboutSub:    "Short bio",
+    // BROWSER TAB TITLE
+    tabTitle:    "katt — Game Developer",
     contactTitle:"Contact",
     contactMe:   "Get in touch",
     contactNote: "Open to interesting projects, consulting and gamedev talk. I usually reply within 3 hours.",

@@ -61,6 +61,8 @@ export default function App() {
   useEffect(() => {
     document.documentElement.lang = lang;
     localStorage.setItem("lang", lang);
+    // Название вкладки браузера — меняется вместе с языком (см. tabTitle в settings.ts)
+    document.title = UI[lang].tabTitle;
   }, [lang]);
 
   const open = (p: Project) => { setActive(p); setSlide(0); setSettingsOpen(false); };
