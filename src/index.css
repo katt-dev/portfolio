@@ -767,17 +767,19 @@ h1, h2, h3, p, a, span { overflow-wrap: break-word; }
 }
 .contacts__item:hover .contacts__go { color: var(--brand); transform: translateX(2px); }
 
-/* Фирменные цвета. Для сервисов с чёрно-белым знаком (GitHub, X) берём
-   нейтральный оттенок — он одинаково читается в светлой и тёмной теме. */
-.contacts__item--telegram { --brand: #2aabee; }
+/* Фирменные цвета — официальные, из пакета simple-icons.
+   Исключение: у GitHub, X и Steam фирменный цвет чёрный (#181717 / #000000).
+   На тёмной теме такой значок пропал бы, поэтому им даём нейтральный
+   оттенок, читаемый и на светлом, и на тёмном фоне. */
+.contacts__item--telegram { --brand: #26a5e4; }
 .contacts__item--discord  { --brand: #5865f2; }
-.contacts__item--github   { --brand: #8b949e; }
+.contacts__item--github   { --brand: #8b949e; } /* офиц. #181717 — чёрный */
 .contacts__item--itch     { --brand: #fa5c5c; }
-.contacts__item--youtube  { --brand: #ff3b30; }
+.contacts__item--youtube  { --brand: #ff0000; }
 .contacts__item--twitch   { --brand: #9146ff; }
 .contacts__item--vk       { --brand: #0077ff; }
-.contacts__item--x        { --brand: #71767b; }
-.contacts__item--steam    { --brand: #66c0f4; }
+.contacts__item--x        { --brand: #71767b; } /* офиц. #000000 — чёрный */
+.contacts__item--steam    { --brand: #66c0f4; } /* офиц. #000000 — чёрный */
 .contacts__item--boosty   { --brand: #f15f2c; }
 .contacts__item--email    { --brand: var(--accent-2); }
 .contacts__item--link     { --brand: var(--text-muted); }
