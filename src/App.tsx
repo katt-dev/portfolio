@@ -5,18 +5,27 @@
 //   Контент — имя, тексты, проекты и обложки — лежит отдельно в
 //   файле  src/settings.ts . Именно его и надо править.
 //
-//   Здесь менять почти ничего не нужно. Единственное, что можно аккуратно
-//   трогать — порядок и размеры карточек внизу в блоке «ПРОЕКТЫ»:
-//     pg-span4 = широкий блок   pg-span2 = узкий   pg-span3 = средний
+//   Проекты на главной раскладываются автоматически: сколько блоков в
+//   settings.ts (или добавлено в редакторе) — столько и покажется.
+//   Ширина карточек чередуется по шаблону SPAN_PATTERN ниже.
+//
+//   РЕДАКТОР ПРОЕКТОВ (только для тебя): добавь  #admin  в адрес сайта
+//   или нажми Ctrl+Shift+E.
 //
 // ============================================================================
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import {
   NAME, EMAIL, DISCORD, BADGE, PORTRAIT,
-  UI, PROJECTS,
+  UI, STATUS,
   type Lang, type UiText, type Project,
 } from "./settings";
+import { ADMIN_KEY, loadProjects } from "./projectsStore";
+import ProjectEditor from "./admin/ProjectEditor";
+
+// Ширина карточек на главной, по кругу:
+//   pg-span4 = широкий блок   pg-span3 = средний   pg-span2 = узкий
+const SPAN_PATTERN = ["pg-span4", "pg-span2", "pg-span2", "pg-span4", "pg-span3", "pg-span3"];
 
 export default function App() {
   // ---------- состояние ----------
@@ -35,8 +44,11 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
 
+  const [projects, setProjects] = useState<Project[]>(() => loadProjects());
   const [active, setActive] = useState<Project | null>(null);
   const [slide, setSlide] = useState(0);
+
+  const { isAdmin, editorOpen, setEditorOpen } = useAdmin();
 
   const copy: UiText = UI[lang];
 
@@ -79,9 +91,9 @@ export default function App() {
   }, [active, prev, next]);
 
   useEffect(() => {
-    document.body.style.overflow = active ? "hidden" : "";
+    document.body.style.overflow = active || editorOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
-  }, [active]);
+  }, [active, editorOpen]);
 
   useEffect(() => {
     if (!settingsOpen) return;
@@ -94,6 +106,14 @@ export default function App() {
     return () => document.removeEventListener("mousedown", onDown);
   }, [settingsOpen]);
 
+  // Если проект открыт и его отредактировали/удалили — обновляем окно.
+  useEffect(() => {
+    if (!active) return;
+    const fresh = projects.find((p) => p.id === active.id);
+    if (!fresh) { setActive(null); return; }
+    if (fresh !== active) setActive(fresh);
+  }, [projects]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ---------- карточка проекта ----------
   const Card = ({ p, i }: { p: Project; i: number }) => (
     <button type="button" className="project-card" onClick={() => open(p)} style={{ animationDelay: `${0.07 * i}s` }} aria-label={`${copy.featured}: ${p.title[lang]}`}>
@@ -101,6 +121,12 @@ export default function App() {
         <img className="project-card__img" src={p.cover} alt={p.subtitle[lang]} loading="lazy" />
         <span className="project-card__badge project-card__badge--year">{p.year}</span>
         <span className="project-card__badge project-card__badge--engine">{p.engine}</span>
+        {/* Плашка стадии — только если стадия указана в settings.ts / редакторе */}
+        {p.status && (
+          <span className={`status-chip status-chip--${p.status} project-card__status`}>
+            {STATUS[p.status][lang]}
+          </span>
+        )}
       </div>
       <div className="project-card__body">
         <div>
@@ -161,6 +187,17 @@ export default function App() {
                     <button type="button" className={`lang-btn${lang === "en" ? " is-on" : ""}`} onClick={() => setLang("en")}>EN · Eng</button>
                   </div>
                   <p className="settings-panel__hint">{copy.langHint}</p>
+
+                  {/* Кнопка редактора — видна только тебе */}
+                  {isAdmin && (
+                    <>
+                      <div className="rule" style={{ margin: "14px 0 12px" }} />
+                      <button type="button" className="lang-btn is-on" style={{ width: "100%" }}
+                        onClick={() => { setEditorOpen(true); setSettingsOpen(false); }}>
+                        {copy.ed_open}
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -192,7 +229,8 @@ export default function App() {
                 {copy.viewWork}
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
               </a>
-              <a href={`mailto:${EMAIL}`} className="contact-btn contact-btn--ghost">{copy.writeMe}</a>
+              {/* Кнопка «написать» — только если EMAIL заполнен в settings.ts */}
+              {EMAIL && <a href={`mailto:${EMAIL}`} className="contact-btn contact-btn--ghost">{copy.writeMe}</a>}
             </div>
           </div>
           <div style={{ position: "relative" }}>
@@ -209,20 +247,18 @@ export default function App() {
         <section id="projects" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 24px" }}>
           <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 32 }}>
             <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 56px)", margin: 0 }}>{copy.featured}</h2>
-            <span className="mono" style={{ color: "var(--text-muted)" }}>{copy.clickHint}</span>
+            {projects.length > 0 && <span className="mono" style={{ color: "var(--text-muted)" }}>{copy.clickHint}</span>}
           </div>
           <div className="rule" style={{ marginBottom: 32 }} />
 
-          {/* Порядок и размер карточек на главной.
-              PROJECTS[0..5] идут из settings.ts по очереди.
-              Меняй только места  PROJECTS[n]  и классы  pg-span*. */}
+          {/* Карточки строятся по списку проектов: сколько есть — столько
+              и покажется. Удалил проект в settings.ts — блок просто исчез. */}
           <div className="project-grid">
-            <div className="pg-span4"><Card p={PROJECTS[0]} i={0} /></div>
-            <div className="pg-span2"><Card p={PROJECTS[1]} i={1} /></div>
-            <div className="pg-span2"><Card p={PROJECTS[2]} i={2} /></div>
-            <div className="pg-span4"><Card p={PROJECTS[3]} i={3} /></div>
-            <div className="pg-span3"><Card p={PROJECTS[4]} i={4} /></div>
-            <div className="pg-span3"><Card p={PROJECTS[5]} i={5} /></div>
+            {projects.map((p, i) => (
+              <div key={`${p.id}-${i}`} className={SPAN_PATTERN[i % SPAN_PATTERN.length]}>
+                <Card p={p} i={i} />
+              </div>
+            ))}
           </div>
         </section>
 
@@ -235,7 +271,7 @@ export default function App() {
               <span className="mono" style={{ color: "var(--text-muted)", display: "block", marginTop: 12 }}>{copy.aboutSub}</span>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 20, color: "var(--text-soft)", fontSize: 17, lineHeight: 1.7 }}>
-              {copy.about.map((p, i) => <p key={i} style={{ margin: 0 }}>{p}</p>)}
+              {copy.about.filter(Boolean).map((p, i) => <p key={i} style={{ margin: 0 }}>{p}</p>)}
             </div>
           </div>
         </section>
@@ -243,17 +279,23 @@ export default function App() {
         {/* ====== КОНТАКТЫ ====== */}
         <section id="contact" style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 24px 64px" }}>
           <div className="rule" style={{ marginBottom: 40 }} />
-          <span className="mono" style={{ color: "var(--text-muted)" }}>{copy.contactMe}</span>
-          <a
-            href={`mailto:${EMAIL}`}
-            className="display"
-            style={{ display: "block", fontSize: "clamp(28px, 6vw, 72px)", textDecoration: "none", color: "var(--text)", marginTop: 16, transition: "color 0.3s" }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = "var(--accent)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text)"; }}
-          >
-            {EMAIL}
-          </a>
-          <p style={{ color: "var(--text-muted)", marginTop: 12 }} className="mono">{DISCORD}</p>
+          <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 56px)", margin: 0 }}>{copy.contactTitle}</h2>
+          <span className="mono" style={{ color: "var(--text-muted)", display: "block", marginTop: 12 }}>{copy.contactMe}</span>
+
+          {/* Почта — только если EMAIL заполнен */}
+          {EMAIL && (
+            <a
+              href={`mailto:${EMAIL}`}
+              className="display"
+              style={{ display: "block", fontSize: "clamp(28px, 6vw, 72px)", textDecoration: "none", color: "var(--text)", marginTop: 16, transition: "color 0.3s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "var(--accent)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text)"; }}
+            >
+              {EMAIL}
+            </a>
+          )}
+
+          {DISCORD && <p style={{ color: "var(--text-muted)", marginTop: 16, whiteSpace: "pre-line" }} className="mono">{DISCORD}</p>}
           <p style={{ color: "var(--text-soft)", fontSize: 17, marginTop: 20, maxWidth: "50ch" }}>{copy.contactNote}</p>
         </section>
       </main>
@@ -281,7 +323,7 @@ export default function App() {
                     {active.images.map((img, i) => (
                       <div className="carousel__slide" key={i}>
                         <img className="carousel__img" src={img.src} alt={img.caption[lang]} />
-                        <span className="carousel__caption">{img.caption[lang]}</span>
+                        {img.caption[lang] && <span className="carousel__caption">{img.caption[lang]}</span>}
                       </div>
                     ))}
                   </div>
@@ -312,33 +354,62 @@ export default function App() {
                 <div>
                   <span className="project-card__num">GAME / {active.num} · {active.year} · {active.engine}</span>
                   <h2 className="display" style={{ fontSize: "clamp(30px, 4vw, 46px)", margin: "8px 0 6px" }}>{active.title[lang]}</h2>
-                  <p style={{ color: "var(--text-soft)", fontSize: 16, margin: 0 }}>{active.subtitle[lang]}</p>
+                  {active.subtitle[lang] && <p style={{ color: "var(--text-soft)", fontSize: 16, margin: 0 }}>{active.subtitle[lang]}</p>}
                 </div>
+
+                {/* Стадия проекта — только если указана */}
+                {active.status && (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                    <span className="project-card__num">{copy.statusLabel}</span>
+                    <span className={`status-chip status-chip--${active.status}`}>{STATUS[active.status][lang]}</span>
+                  </div>
+                )}
+
                 <div className="rule" />
-                <p style={{ fontSize: 15, lineHeight: 1.7, color: "var(--text-soft)", margin: 0 }}>{active.description[lang]}</p>
+                {active.description[lang] && (
+                  <p style={{ fontSize: 15, lineHeight: 1.7, color: "var(--text-soft)", margin: 0 }}>{active.description[lang]}</p>
+                )}
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {active.tags.map((tag) => <span key={tag} className="tag">{tag}</span>)}
                 </div>
-                <div className="rule" />
-                <div>
-                  <span className="project-card__num">{copy.teamLabel}</span>
-                  <div style={{ marginTop: 10 }}>
-                    {active.team.map((c) => (
-                      <div className="collab" key={c.name}>
-                        <img className="collab__avatar" src={c.avatar} alt={c.name} loading="lazy" />
-                        <div>
-                          <div className="collab__name">{c.name}</div>
-                          <div className="collab__role">{c.role[lang]}</div>
+
+                {/* Команда — показываем блок, только если кто-то есть */}
+                {active.team.length > 0 && (<>
+                  <div className="rule" />
+                  <div>
+                    <span className="project-card__num">{copy.teamLabel}</span>
+                    <div style={{ marginTop: 10 }}>
+                      {active.team.map((c) => (
+                        <div className="collab" key={c.name}>
+                          {/* Нет аватарки — просто не показываем её */}
+                          {c.avatar && <img className="collab__avatar" src={c.avatar} alt={c.name} loading="lazy" />}
+                          <div>
+                            <div className="collab__name">{c.name}</div>
+                            <div className="collab__role">{c.role[lang]}</div>
+                          </div>
+                          {/* Почта не указана — кнопки нет */}
+                          {c.email && (
+                            <a
+                              className="collab__mail"
+                              href={`mailto:${c.email}?subject=${encodeURIComponent(mailSubject(active.title[lang]))}`}
+                              title={copy.mailBtn}
+                              aria-label={`${copy.mailBtn}: ${c.name}`}
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 8l-10 6L2 8"/></svg>
+                            </a>
+                          )}
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
+                </>)}
+
                 <div className="rule" />
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 13 }}>
                   <span className="project-card__num">{copy.roleLabel}</span>
                   <span style={{ fontWeight: 500 }}>{active.myRole[lang]}</span>
                 </div>
+
                 {/* Кнопка со ссылкой на игру / страницу в Steam.
                     Показывается только если в settings.ts заполнено linkUrl */}
                 {active.linkUrl && (
@@ -348,15 +419,73 @@ export default function App() {
                   </a>
                 )}
 
-                <a className="contact-btn" href={`mailto:${EMAIL}?subject=${encodeURIComponent(mailSubject(active.title[lang]))}`}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 8l-10 6L2 8"/></svg>
-                  {copy.mailBtn}
-                </a>
+                {/* «Написать руководителю» — только если почта заполнена */}
+                {EMAIL && (
+                  <a className="contact-btn" href={`mailto:${EMAIL}?subject=${encodeURIComponent(mailSubject(active.title[lang]))}`}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 8l-10 6L2 8"/></svg>
+                    {copy.mailBtn}
+                  </a>
+                )}
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* ====== РЕДАКТОР ПРОЕКТОВ (только для тебя) ====== */}
+      {isAdmin && editorOpen && (
+        <ProjectEditor
+          projects={projects}
+          setProjects={setProjects}
+          copy={copy}
+          lang={lang}
+          onClose={() => setEditorOpen(false)}
+        />
+      )}
     </div>
   );
+}
+
+// ---------------------------------------------------------------------------
+//  Доступ к редактору.
+//
+//  Редактор включается на ЭТОМ компьютере и запоминается в браузере:
+//    • открой сайт с  #admin  в конце адреса, или
+//    • нажми Ctrl+Shift+E.
+//  Выключить насовсем:  открой сайт с  #noadmin .
+//
+//  Важно: сайт статический, настоящей защиты паролем тут быть не может.
+//  Правки редактора живут только в твоём браузере и посетителям не видны,
+//  пока ты не перенесёшь их в settings.ts и не задеплоишь.
+// ---------------------------------------------------------------------------
+function useAdmin() {
+  const [isAdmin, setIsAdmin] = useState(() => {
+    try {
+      const hash = window.location.hash.toLowerCase();
+      if (hash === "#noadmin") { localStorage.removeItem(ADMIN_KEY); return false; }
+      if (hash === "#admin") { localStorage.setItem(ADMIN_KEY, "1"); return true; }
+      return localStorage.getItem(ADMIN_KEY) === "1" || import.meta.env.DEV;
+    } catch {
+      return import.meta.env.DEV;
+    }
+  });
+
+  const [editorOpen, setEditorOpen] = useState(
+    () => window.location.hash.toLowerCase() === "#admin",
+  );
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && (e.key === "E" || e.key === "e")) {
+        e.preventDefault();
+        try { localStorage.setItem(ADMIN_KEY, "1"); } catch { /* ignore */ }
+        setIsAdmin(true);
+        setEditorOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  return { isAdmin, editorOpen, setEditorOpen };
 }
