@@ -219,7 +219,9 @@ export default function App() {
           <div style={{ position: "relative" }}>
             <div style={{ position: "relative", border: "1px solid var(--text)", boxShadow: "8px 8px 0 var(--text)", overflow: "hidden", aspectRatio: "4/5" }}>
               <img src={content.portrait} alt={content.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", filter: "grayscale(1) contrast(1.05)" }} />
-              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "14px 16px", background: "linear-gradient(transparent, #000a)", color: "#fff" }}>
+              {/* Подпись на портрете. Стили в index.css: плашка сама
+                  затемняет то, что под ней, — читается на любом фоне. */}
+              <div className="portrait__caption">
                 <span className="mono">{copy.location}</span>
               </div>
             </div>
