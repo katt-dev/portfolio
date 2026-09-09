@@ -136,7 +136,7 @@ export default function App() {
 
       {/* ====== ШАПКА ====== */}
       <header style={{ position: "sticky", top: 0, zIndex: 100, borderBottom: "1px solid var(--line-strong)", background: "color-mix(in srgb, var(--bg) 85%, transparent)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+        <div className="wrap wrap--bar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
           <a href="#top" className="display" style={{ fontSize: 20, textDecoration: "none", color: "var(--text)" }}>{copy.logo}</a>
           <nav className="nav-links-desk" style={{ display: "flex", alignItems: "center", gap: 22 }}>
             <a href="#projects" className="nav-link">{copy.navProjects}</a>
@@ -200,7 +200,7 @@ export default function App() {
       <main id="top">
 
         {/* ====== ГЕРОЙ ====== */}
-        <section style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 24px 40px" }} className="hero-grid">
+        <section className="wrap wrap--hero hero-grid">
           <div>
             <span className="mono" style={{ color: "var(--text-muted)" }}>{content.badge}</span>
             <h1 className="display" style={{ fontSize: "clamp(48px, 9vw, 110px)", margin: "16px 0 0" }}>
@@ -229,7 +229,7 @@ export default function App() {
         </section>
 
         {/* ====== ПРОЕКТЫ ====== */}
-        <section id="projects" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 24px" }}>
+        <section id="projects" className="wrap">
           <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 32 }}>
             <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 56px)", margin: 0 }}>{copy.featured}</h2>
             {projects.length > 0 && <span className="mono" style={{ color: "var(--text-muted)" }}>{copy.clickHint}</span>}
@@ -248,7 +248,7 @@ export default function App() {
         </section>
 
         {/* ====== ОБО МНЕ ====== */}
-        <section id="about" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 24px" }}>
+        <section id="about" className="wrap">
           <div className="rule" style={{ marginBottom: 40 }} />
           <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 56px)", margin: 0 }}>{copy.aboutTitle}</h2>
           <span className="mono" style={{ color: "var(--text-muted)", display: "block", marginTop: 12 }}>{copy.aboutSub}</span>
@@ -258,7 +258,7 @@ export default function App() {
         </section>
 
         {/* ====== КОНТАКТЫ ====== */}
-        <section id="contact" style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 24px 64px" }}>
+        <section id="contact" className="wrap wrap--contact">
           <div className="rule" style={{ marginBottom: 40 }} />
           <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 56px)", margin: 0 }}>{copy.contactTitle}</h2>
           <span className="mono" style={{ color: "var(--text-muted)", display: "block", marginTop: 12 }}>{copy.contactMe}</span>
@@ -276,14 +276,21 @@ export default function App() {
             </a>
           )}
 
-          {content.discord && <p style={{ color: "var(--text-muted)", marginTop: 16, whiteSpace: "pre-line" }} className="mono">{content.discord}</p>}
+          {/* Контакты: каждая строка из настроек — отдельная заметная плашка */}
+          {content.discord.trim() && (
+            <ul className="contacts">
+              {content.discord.split("\n").map((l) => l.trim()).filter(Boolean).map((line, i) => (
+                <li className="contacts__item" key={i}>{line}</li>
+              ))}
+            </ul>
+          )}
           <p style={{ color: "var(--text-soft)", fontSize: 17, marginTop: 20, maxWidth: "50ch" }}>{copy.contactNote}</p>
         </section>
       </main>
 
       {/* ====== ФУТЕР ====== */}
       <footer style={{ borderTop: "1px solid var(--line-strong)" }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "24px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+        <div className="wrap wrap--foot" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
           <span className="mono" style={{ color: "var(--text-muted)" }}>© {new Date().getFullYear()} {content.name}</span>
           <span className="mono" style={{ color: "var(--text-muted)" }}>{copy.handmade}</span>
         </div>

@@ -665,3 +665,81 @@ body::after {
     -webkit-backdrop-filter: blur(7px) brightness(0.5) saturate(0.85);
   }
 }
+
+/* ===========================================================================
+   ОБЩАЯ СЕТКА СТРАНИЦЫ И АДАПТИВ
+
+   Отступы секций живут здесь, а не в разметке: инлайн-стиль нельзя
+   переопределить медиазапросом, поэтому на телефонах поля не ужимались.
+   =========================================================================== */
+.wrap { max-width: 1280px; margin: 0 auto; padding: 64px 24px; }
+.wrap--hero    { padding-bottom: 40px; }
+.wrap--contact { padding: 80px 24px 64px; }
+.wrap--bar     { padding: 14px 24px; }
+.wrap--foot    { padding: 24px; }
+
+@media (max-width: 600px) {
+  .wrap         { padding: 44px 16px; }
+  .wrap--hero   { padding-bottom: 28px; }
+  .wrap--contact{ padding: 52px 16px 44px; }
+  .wrap--bar    { padding: 12px 16px; }
+  .wrap--foot   { padding: 20px 16px; }
+}
+
+/* Длинные слова, ссылки и почта не должны распирать страницу вбок. */
+h1, h2, h3, p, a, span { overflow-wrap: break-word; }
+
+/* Один проект — пусть занимает всю строку, а не две трети с пустотой справа. */
+.project-grid > *:only-child { grid-column: 1 / -1; }
+
+/* Панель настроек не должна вылезать за экран на узких телефонах. */
+.settings-panel { max-width: calc(100vw - 32px); }
+
+@media (max-width: 560px) {
+  /* На узком экране длинный тег лучше перенести, чем дать ему вылезти. */
+  .tag { white-space: normal; }
+}
+
+/* --- ОКНО ПРОЕКТА НА ТЕЛЕФОНЕ И ПЛАНШЕТЕ ---
+   На десктопе колонки скроллятся по отдельности. Когда они встают друг под
+   друга, такой раскладке нужен один общий скролл: иначе всё, что не влезло
+   в 94vh, обрезалось родителем с overflow:hidden и было недоступно. */
+.modal__inner { min-height: 0; }
+
+@media (max-width: 720px) {
+  .modal        { overflow-y: auto; overscroll-behavior: contain; }
+  .modal__inner { overflow: visible; }
+  .modal__media { overflow-y: visible; }
+  .modal__info  { overflow-y: visible; padding: 22px 18px; gap: 16px; }
+}
+
+/* ===========================================================================
+   КОНТАКТЫ (ники в телеграме, дискорде и т.д.)
+
+   Раньше это была одна строка классом .mono: 11px, приглушённый серый
+   и text-transform: uppercase — ники не только терялись, но и коверкались
+   капсом. Теперь каждая строка — отдельная плашка обычным регистром.
+   =========================================================================== */
+.contacts {
+  list-style: none; margin: 24px 0 0; padding: 0;
+  display: flex; flex-wrap: wrap; gap: 10px;
+}
+.contacts__item {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 14px; letter-spacing: 0.02em; line-height: 1.4;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 11px 14px;
+  transition: border-color 0.25s var(--ease), transform 0.25s var(--ease);
+}
+.contacts__item:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+@media (max-width: 560px) {
+  .contacts { gap: 8px; }
+  .contacts__item { font-size: 13px; padding: 10px 12px; width: 100%; }
+}
