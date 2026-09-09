@@ -24,9 +24,15 @@
       "location": "Ahaha Studio(Основная) · Ancy Forge Studio(Неофициальная)",
       "heroBio": "Разработчик · C# · Unity · Godot 4",
       "about": [
-        "Я разработчик игр, специализирующийся на создании игр под ключ. ",
-        "Самостоятельно занимаюсь практически всеми аспектами разработки - от проектирования игровой логики и интерфейса до работы с механиками, системами и визуальной частью.",
-        "Единственное направление, которым я не занимаюсь, - серверная разработка."
+        "Я разработчик игр, занимающийся созданием проектов от прототипа до полноценной реализации. В процессе разработки самостоятельно работаю практически со всеми игровыми системами: игровой логикой, механиками, интерфейсами, NPC, предметами, взаимодействиями, визуальными системами и архитектурой проекта. Не занимаюсь только серверной разработкой.",
+        "",
+        "Моя основная специализация — интерфейсы и объектно-ориентированное программирование. Особое внимание уделяю созданию интуитивно понятных систем, которые легко воспринимаются пользователем и не требуют лишних объяснений.",
+        "",
+        "В программировании придерживаюсь структурированного подхода. Пишу аккуратный, читаемый и расширяемый код, стараюсь правильно разделять ответственность между компонентами и заранее продумывать архитектуру систем. Для меня важно, чтобы код оставался понятным и удобным для дальнейшей разработки.",
+        "",
+        "Работаю с C#, Python и GDScript. Основные игровые движки — Unity Engine и Godot 4.",
+        "",
+        "Мне интересна разработка сложных взаимосвязанных систем, оптимизация рабочих процессов и создание качественных игровых решений. В каждом проекте стремлюсь сочетать техническую грамотность, удобство использования и продуманную структуру."
       ],
       "navProjects": "Проекты",
       "navAbout": "Обо мне",
@@ -64,9 +70,15 @@
       "location": "Ahaha Studio(Main) ·  Ancy Forge Studio(Non-Official)",
       "heroBio": "Game Developer · C# · Unity · Godot 4",
       "about": [
-        "I am a game developer specializing in end-to-end game creation.",
-        "I handle virtually all aspects of development myself - from designing game logic and interfaces to working on mechanics, systems, and visuals.",
-        "The only area I do not cover is server - side development."
+        "I am a game developer focused on creating projects from initial prototypes to fully developed implementations. Throughout development, I work independently on most aspects of a game, including gameplay logic, mechanics, interfaces, NPCs, items, interactions, visual systems, and project architecture. The only area I do not work with is server-side development.",
+        "",
+        "My main areas of expertise are user interfaces and object-oriented programming. I place particular emphasis on creating intuitive systems that are easy to understand and use without unnecessary explanations.",
+        "",
+        "I follow a structured approach to programming. I write clean, readable, and scalable code, aim to properly separate responsibilities between components, and carefully consider system architecture in advance. I believe that code should remain clear, maintainable, and convenient to expand throughout the development process.",
+        "",
+        "I work with C#, Python, and GDScript. My primary game engines are Unity Engine and Godot 4.",
+        "",
+        "I am particularly interested in developing complex interconnected systems, improving development workflows, and creating well-engineered game solutions. In every project, I aim to combine technical quality, usability, and a well-structured architecture."
       ],
       "navProjects": "Projects",
       "navAbout": "About",
