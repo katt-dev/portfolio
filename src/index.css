@@ -724,7 +724,14 @@ h1, h2, h3, p, a, span { overflow-wrap: break-word; }
    =========================================================================== */
 .contacts {
   list-style: none; margin: 14px 0 0; padding: 0;
-  display: flex; flex-wrap: wrap; gap: 10px;
+  /* Сетка, а не лента: плашки одинаковой ширины и высоты, ряды заполняются
+     ровно и не оставляют рваного края справа, сколько бы контактов ни было.
+     auto-fill (а не auto-fit) — чтобы два контакта не растягивались
+     во всю страницу, а сохраняли нормальный размер. */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px;
+  max-width: 940px;
 }
 .contacts__hint {
   margin: 22px 0 0; color: var(--text-muted);
@@ -732,7 +739,9 @@ h1, h2, h3, p, a, span { overflow-wrap: break-word; }
 .contacts__item {
   --brand: var(--text-muted);   /* цвет сервиса, переопределяется ниже */
   position: relative;
-  display: inline-flex; align-items: center; gap: 11px;
+  display: flex; align-items: center; gap: 11px;
+  width: 100%; height: 100%;   /* ячейка сетки заполняется целиком */
+  box-sizing: border-box;
   font-family: "JetBrains Mono", monospace;
   font-size: 14px; letter-spacing: 0.02em; line-height: 1.3;
   color: var(--text); text-decoration: none; text-align: left;
@@ -760,7 +769,10 @@ h1, h2, h3, p, a, span { overflow-wrap: break-word; }
   font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--text-muted);
 }
-.contacts__value { font-weight: 500; }
+.contacts__value {
+  font-weight: 500;
+  overflow-wrap: anywhere;   /* длинный ник переносится, а не рвёт сетку */
+}
 .contacts__go {
   display: inline-flex; color: var(--text-muted); flex-shrink: 0;
   transition: color 0.25s var(--ease), transform 0.25s var(--ease);
@@ -794,8 +806,8 @@ h1, h2, h3, p, a, span { overflow-wrap: break-word; }
 }
 
 @media (max-width: 560px) {
-  .contacts { gap: 8px; }
-  .contacts__item { font-size: 13px; padding: 10px 12px; width: 100%; }
+  .contacts { grid-template-columns: 1fr; gap: 8px; }
+  .contacts__item { font-size: 13px; padding: 10px 12px; }
 }
 
 /* ===========================================================================
