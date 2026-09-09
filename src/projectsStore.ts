@@ -14,8 +14,8 @@
 
 import {
   PROJECTS, STATUS_ORDER,
-  type ImageFit, type Project, type ProjectImage, type ProjectStatus,
-  type TeamMember, type TextPair,
+  type ImageFit, type Project, type ProjectImage, type ProjectLink,
+  type ProjectStatus, type TeamMember, type TextPair,
 } from "./settings";
 import { isAdminUnlocked } from "./adminAccess";
 
@@ -43,6 +43,21 @@ const image = (v: unknown): ProjectImage => {
   return { src: str(o.src), caption: pair(o.caption) };
 };
 
+const link = (v: unknown): ProjectLink => {
+  const o = (v ?? {}) as Partial<ProjectLink>;
+  return { url: str(o.url).trim(), label: pair(o.label) };
+};
+
+/**
+ * Раньше ссылка была одна (поля linkUrl / linkLabel). Старые файлы и
+ * черновики продолжают работать: одиночная ссылка превращается в список.
+ */
+const links = (o: Record<string, unknown>): ProjectLink[] => {
+  if (Array.isArray(o.links)) return o.links.map(link).filter((l) => l.url);
+  const legacy = link({ url: o.linkUrl, label: o.linkLabel });
+  return legacy.url ? [legacy] : [];
+};
+
 const member = (v: unknown): TeamMember => {
   const o = (v ?? {}) as Partial<TeamMember>;
   return { name: str(o.name), role: pair(o.role), avatar: str(o.avatar), email: str(o.email) };
@@ -63,8 +78,7 @@ export function normalizeProject(v: unknown): Project {
     subtitle: pair(o.subtitle),
     description: pair(o.description),
     myRole: pair(o.myRole),
-    linkUrl: str(o.linkUrl),
-    linkLabel: pair(o.linkLabel),
+    links: links((v ?? {}) as Record<string, unknown>),
     images: Array.isArray(o.images) ? o.images.map(image) : [],
     team: Array.isArray(o.team) ? o.team.map(member) : [],
   };
@@ -124,8 +138,7 @@ export function makeEmptyProject(index: number, title: string): Project {
     subtitle: { ru: "", en: "" },
     description: { ru: "", en: "" },
     myRole: { ru: "", en: "" },
-    linkUrl: "",
-    linkLabel: { ru: "", en: "" },
+    links: [],
     images: [],
     team: [],
   });
@@ -153,8 +166,9 @@ export function toSettingsCode(projects: Project[]): string {
     subtitle:    ${p(x.subtitle)},
     description: ${p(x.description)},
     myRole:      ${p(x.myRole)},
-    linkUrl:     ${q(x.linkUrl)},
-    linkLabel:   ${p(x.linkLabel)},
+    links: [
+${x.links.map((l) => `      { url: ${q(l.url)}, label: ${p(l.label)} },`).join("\n")}
+    ],
     images: [
 ${x.images.map((i) => `      { src: ${q(i.src)}, caption: ${p(i.caption)} },`).join("\n")}
     ],

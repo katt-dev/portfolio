@@ -424,8 +424,39 @@ export default function ProjectEditor({ projects, setProjects, content, setConte
                 <Pair label={t.ed_f_subtitle}  value={current.subtitle}  onChange={(subtitle) => patch({ subtitle })} />
                 <Pair label={t.ed_f_desc}      value={current.description} onChange={(description) => patch({ description })} area />
                 <Pair label={t.ed_f_myRole}    value={current.myRole}    onChange={(myRole) => patch({ myRole })} />
-                <Text label={t.ed_f_linkUrl}   value={current.linkUrl}   onChange={(linkUrl) => patch({ linkUrl })} />
-                <Pair label={t.ed_f_linkLabel} value={current.linkLabel} onChange={(linkLabel) => patch({ linkLabel })} />
+                <h3 className="ed-section">{t.ed_links}</h3>
+                <p className="ed-hint">{t.ed_linksHint}</p>
+                {current.links.map((l, i) => (
+                  <div className="ed-sub" key={i}>
+                    <div className="ed-sub__head">
+                      <span className="ed-label">#{i + 1}</span>
+                      <div className="ed-item__side">
+                        <button type="button" className="ed-icon" title={t.ed_up} disabled={i === 0}
+                          onClick={() => {
+                            const next = [...current.links];
+                            [next[i - 1], next[i]] = [next[i], next[i - 1]];
+                            patch({ links: next });
+                          }}>&#8593;</button>
+                        <button type="button" className="ed-icon" title={t.ed_down} disabled={i === current.links.length - 1}
+                          onClick={() => {
+                            const next = [...current.links];
+                            [next[i + 1], next[i]] = [next[i], next[i + 1]];
+                            patch({ links: next });
+                          }}>&#8595;</button>
+                        <button type="button" className="ed-icon ed-icon--danger" title={t.ed_remove}
+                          onClick={() => patch({ links: current.links.filter((_, k) => k !== i) })}>&#10005;</button>
+                      </div>
+                    </div>
+                    <Text label={t.ed_f_linkUrl} value={l.url}
+                      onChange={(url) => patch({ links: current.links.map((x, k) => (k === i ? { ...x, url } : x)) })} />
+                    <Pair label={t.ed_f_linkLabel} value={l.label}
+                      onChange={(label) => patch({ links: current.links.map((x, k) => (k === i ? { ...x, label } : x)) })} />
+                  </div>
+                ))}
+                <button type="button" className="ed-btn"
+                  onClick={() => patch({ links: [...current.links, { url: "", label: { ru: "", en: "" } }] })}>
+                  + {t.ed_addLink}
+                </button>
 
                 {/* ---- скриншоты ---- */}
                 <h3 className="ed-section">{t.ed_shots}</h3>

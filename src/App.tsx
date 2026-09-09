@@ -248,14 +248,10 @@ export default function App() {
         {/* ====== ОБО МНЕ ====== */}
         <section id="about" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 24px" }}>
           <div className="rule" style={{ marginBottom: 40 }} />
-          <div className="about-grid">
-            <div>
-              <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 56px)", margin: 0 }}>{copy.aboutTitle}</h2>
-              <span className="mono" style={{ color: "var(--text-muted)", display: "block", marginTop: 12 }}>{copy.aboutSub}</span>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 20, color: "var(--text-soft)", fontSize: 17, lineHeight: 1.7 }}>
-              {copy.about.filter(Boolean).map((p, i) => <p key={i} style={{ margin: 0 }}>{p}</p>)}
-            </div>
+          <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 56px)", margin: 0 }}>{copy.aboutTitle}</h2>
+          <span className="mono" style={{ color: "var(--text-muted)", display: "block", marginTop: 12 }}>{copy.aboutSub}</span>
+          <div className="about-text">
+            {copy.about.filter(Boolean).map((p, i) => <p key={i}>{p}</p>)}
           </div>
         </section>
 

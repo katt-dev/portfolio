@@ -50,6 +50,11 @@ export default function ProjectModal({ project, lang, copy, email, onClose }: Pr
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose, prev, next]);
 
+  /** Если подпись не заполнена — показываем домен, чтобы кнопка не была пустой. */
+  const hostOf = (url: string) => {
+    try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return url; }
+  };
+
   const mailSubject = (title: string) =>
     lang === "ru"
       ? `Проект «${title}» — вопрос через сайт`
@@ -162,14 +167,14 @@ export default function ProjectModal({ project, lang, copy, email, onClose }: Pr
                 <span style={{ fontWeight: 500 }}>{project.myRole[lang]}</span>
               </div>
 
-              {/* Кнопка со ссылкой на игру / страницу в Steam.
-                  Показывается только если в settings.ts заполнено linkUrl */}
-              {project.linkUrl && (
-                <a className="contact-btn contact-btn--link" href={project.linkUrl} target="_blank" rel="noopener noreferrer">
+              {/* Кнопки площадок: Steam, itch.io, свой сайт — что добавишь,
+                  то и покажется. Подпись у каждой своя. */}
+              {project.links.map((l, i) => (
+                <a key={i} className="contact-btn contact-btn--link" href={l.url} target="_blank" rel="noopener noreferrer">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>
-                  {project.linkLabel[lang]}
+                  {l.label[lang] || hostOf(l.url)}
                 </a>
-              )}
+              ))}
 
               {/* «Написать руководителю» — только если почта заполнена */}
               {email && (

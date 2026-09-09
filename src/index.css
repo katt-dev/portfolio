@@ -391,15 +391,22 @@ body::after {
 /* ===== ГЕРОЙ — адаптив ===== */
 .hero-grid {
   display: grid; grid-template-columns: 1.3fr 1fr;
-  gap: 48px; align-items: end;
+  gap: 48px;
+  /* Ник и текст — по центру высоты портрета, а не прижаты к его низу */
+  align-items: center;
 }
-.about-grid {
-  display: grid; grid-template-columns: 1fr 1.4fr; gap: 48px;
+/* «Обо мне»: заголовок, под ним подзаголовок, ниже текст.
+   Ширина ограничена — длинные строки читать неудобно. */
+.about-text {
+  margin-top: 28px;
+  display: flex; flex-direction: column; gap: 20px;
+  max-width: 70ch;
+  color: var(--text-soft); font-size: 17px; line-height: 1.75;
 }
+.about-text p { margin: 0; }
 @media (max-width: 900px) {
   .hero-grid { grid-template-columns: 1fr; gap: 32px; }
   .hero-grid > div:last-child { max-width: 320px; }
-  .about-grid { grid-template-columns: 1fr; gap: 24px; }
 }
 @media (max-width: 640px) {
   .nav-links-desk { display: none !important; }

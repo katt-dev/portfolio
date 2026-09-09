@@ -46,6 +46,13 @@ import contentData from "./content.json";
 export type Lang = "ru" | "en";
 export interface TextPair { ru: string; en: string }
 export interface ProjectImage { src: string; caption: TextPair }
+
+// Ссылка на площадку, где лежит игра. Их может быть сколько угодно:
+// Steam, itch.io, Google Play, свой сайт — подпись пишешь сам.
+export interface ProjectLink {
+  url: string;      // адрес страницы
+  label: TextPair;  // надпись на кнопке (ru / en)
+}
 export interface TeamMember {
   name: string;
   role: TextPair;
@@ -79,12 +86,9 @@ export interface Project {
   description: TextPair;
   myRole: TextPair;
 
-  // ССЫЛКА НА ИГРУ / СТРАНИЦУ В STEAM
-  //   linkUrl   — адрес страницы (например https://store.steampowered.com/app/... )
-  //               оставь "" (пустые кавычки), если ссылки нет — кнопка просто скроется
-  //   linkLabel — надпись на кнопке (ru / en)
-  linkUrl: string;
-  linkLabel: TextPair;
+  // ССЫЛКИ НА ПЛОЩАДКИ (Steam, itch.io, Google Play, свой сайт…).
+  // Сколько ссылок — столько кнопок в окне проекта. Пустой список = кнопок нет.
+  links: ProjectLink[];
 
   images: ProjectImage[];
   team: TeamMember[];
