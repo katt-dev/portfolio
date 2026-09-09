@@ -596,3 +596,22 @@ body::after {
   background: var(--surface-2);
   border-style: dashed;
 }
+
+/* ===== ЛЕВАЯ КОЛОНКА ОКНА: скриншоты + полное описание под ними ===== */
+.modal__media {
+  display: flex; flex-direction: column; min-width: 0;
+  overflow-y: auto;   /* длинное описание скроллится внутри окна */
+}
+.modal__desc {
+  padding: 20px 22px 24px;
+  border-top: 1px solid var(--line);
+}
+.modal__desc p {
+  margin: 0;
+  font-size: 15px; line-height: 1.75; color: var(--text-soft);
+  white-space: pre-line;  /* переносы строк из описания сохраняются */
+}
+@media (max-width: 720px) {
+  .modal__media { overflow-y: visible; }
+  .modal__desc { padding: 16px 18px 20px; }
+}

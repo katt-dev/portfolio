@@ -63,7 +63,7 @@ export default function ProjectModal({ project, lang, copy, email, onClose }: Pr
           </button>
 
           <div className="modal__inner">
-            <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+            <div className="modal__media">
               <div className={`carousel carousel--${project.imageFit}`}>
                 <div className="carousel__track" style={{ transform: `translateX(${-slide * 100}%)` }}>
                   {project.images.map((img, i) => (
@@ -94,6 +94,13 @@ export default function ProjectModal({ project, lang, copy, email, onClose }: Pr
                   ))}
                 </div>
               )}
+
+              {/* Полное описание — под скриншотами, во всю ширину левой колонки */}
+              {project.description[lang] && (
+                <div className="modal__desc">
+                  <p>{project.description[lang]}</p>
+                </div>
+              )}
             </div>
 
             <div className="modal__info">
@@ -112,9 +119,6 @@ export default function ProjectModal({ project, lang, copy, email, onClose }: Pr
               )}
 
               <div className="rule" />
-              {project.description[lang] && (
-                <p style={{ fontSize: 15, lineHeight: 1.7, color: "var(--text-soft)", margin: 0 }}>{project.description[lang]}</p>
-              )}
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                 {project.tags.map((tag) => <span key={tag} className="tag">{tag}</span>)}
               </div>
