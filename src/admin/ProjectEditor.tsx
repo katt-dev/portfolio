@@ -1,8 +1,10 @@
 // ============================================================================
-//   РЕДАКТОР ПРОЕКТОВ — видно только тебе.
+//   РЕДАКТОР ПРОЕКТОВ — существует только при локальном запуске.
 //
-//   Как открыть:  добавь  #admin  в конец адреса сайта  ИЛИ  нажми Ctrl+Shift+E.
+//   Как открыть:  npm run dev  ->  localhost:5173  ->  Ctrl+Shift+E
 //   Как закрыть:  Esc или кнопка «Закрыть редактор».
+//
+//   В сборку для сайта этот файл не попадает (см. App.tsx).
 //
 //   Правки сохраняются в этот браузер сразу же. Чтобы они появились на сайте
 //   у всех — нажми «Скопировать код для settings.ts» и вставь в settings.ts.
@@ -13,13 +15,15 @@
 import { useEffect, useRef, useState } from "react";
 import {
   STATUS, STATUS_ORDER,
-  type Lang, type Project, type ProjectStatus, type TextPair, type UiText,
+  type Lang, type Project, type ProjectStatus, type TextPair,
 } from "../settings";
 import {
   clearProjects, defaultProjects, download, imageFileToDataUrl,
   imagesFromTransfer, makeEmptyProject, saveProjects, toJson, toSettingsCode,
 } from "../projectsStore";
 import ImageDrop from "./ImageDrop";
+import { ED } from "./editorTexts";
+import "./editor.css";
 
 // ---------------------------------------------------------------------------
 //  Маленькие переиспользуемые поля.
@@ -54,12 +58,13 @@ function Pair({ label, value, onChange, area }: {
 interface Props {
   projects: Project[];
   setProjects: (p: Project[]) => void;
-  copy: UiText;
   lang: Lang;
   onClose: () => void;
 }
 
-export default function ProjectEditor({ projects, setProjects, copy, lang, onClose }: Props) {
+export default function ProjectEditor({ projects, setProjects, lang, onClose }: Props) {
+  // Тексты редактора живут в editorTexts.ts (см. комментарий в том файле).
+  const t = ED[lang];
   const [selected, setSelected] = useState(0);
   const [toast, setToast] = useState("");
   const toastTimer = useRef<number | undefined>(undefined);
@@ -91,13 +96,13 @@ export default function ProjectEditor({ projects, setProjects, copy, lang, onClo
   };
 
   const addProject = () => {
-    const next = [...projects, makeEmptyProject(projects.length, copy.ed_newProject)];
+    const next = [...projects, makeEmptyProject(projects.length, t.ed_newProject)];
     commit(next);
     setSelected(next.length - 1);
   };
 
   const removeProject = (i: number) => {
-    if (!window.confirm(copy.ed_confirmDel)) return;
+    if (!window.confirm(t.ed_confirmDel)) return;
     const next = projects.filter((_, k) => k !== i);
     commit(next);
     setSelected(Math.max(0, Math.min(i, next.length - 1)));
@@ -113,19 +118,19 @@ export default function ProjectEditor({ projects, setProjects, copy, lang, onClo
   };
 
   const resetAll = () => {
-    if (!window.confirm(copy.ed_confirmRes)) return;
+    if (!window.confirm(t.ed_confirmRes)) return;
     clearProjects();
     const base = defaultProjects();
     setProjects(base);
     setSelected(0);
-    flash(copy.ed_reset);
+    flash(t.ed_reset);
   };
 
   const copyCode = async () => {
     const code = toSettingsCode(projects);
     try {
       await navigator.clipboard.writeText(code);
-      flash(copy.ed_copied);
+      flash(t.ed_copied);
     } catch {
       download("projects-settings.ts.txt", code, "text/plain;charset=utf-8");
     }
@@ -139,36 +144,36 @@ export default function ProjectEditor({ projects, setProjects, copy, lang, onClo
   }, [onClose]);
 
   return (
-    <div className="ed-overlay" role="dialog" aria-modal="true" aria-label={copy.ed_title}>
+    <div className="ed-overlay" role="dialog" aria-modal="true" aria-label={t.ed_title}>
       <div className="ed-panel">
 
         {/* ---- шапка ---- */}
         <header className="ed-head">
-          <h2 className="display ed-head__title">{copy.ed_title}</h2>
+          <h2 className="display ed-head__title">{t.ed_title}</h2>
           <div className="ed-head__actions">
-            <button type="button" className="ed-btn" onClick={copyCode}>{copy.ed_copy}</button>
+            <button type="button" className="ed-btn" onClick={copyCode}>{t.ed_copy}</button>
             <button type="button" className="ed-btn" onClick={() => download("projects.json", toJson(projects), "application/json")}>
-              {copy.ed_export}
+              {t.ed_export}
             </button>
-            <button type="button" className="ed-btn ed-btn--danger" onClick={resetAll}>{copy.ed_reset}</button>
-            <button type="button" className="ed-btn ed-btn--solid" onClick={onClose}>{copy.ed_lock}</button>
+            <button type="button" className="ed-btn ed-btn--danger" onClick={resetAll}>{t.ed_reset}</button>
+            <button type="button" className="ed-btn ed-btn--solid" onClick={onClose}>{t.ed_lock}</button>
           </div>
         </header>
 
-        <p className="ed-note">{copy.ed_localNote}</p>
+        <p className="ed-note">{t.ed_localNote}</p>
 
         <div className="ed-body">
 
           {/* ---- список проектов ---- */}
           <aside className="ed-list">
             <div className="ed-list__head">
-              <span className="ed-label">{copy.ed_projects}</span>
+              <span className="ed-label">{t.ed_projects}</span>
               <button type="button" className="ed-btn ed-btn--sm ed-btn--solid" onClick={addProject}>
-                + {copy.ed_new}
+                + {t.ed_new}
               </button>
             </div>
 
-            {projects.length === 0 && <p className="ed-empty">{copy.ed_empty}</p>}
+            {projects.length === 0 && <p className="ed-empty">{t.ed_empty}</p>}
 
             {projects.map((p, i) => (
               <div key={p.id + i} className={`ed-item${i === index ? " is-active" : ""}`}>
@@ -184,9 +189,9 @@ export default function ProjectEditor({ projects, setProjects, copy, lang, onClo
                   </span>
                 </button>
                 <div className="ed-item__side">
-                  <button type="button" className="ed-icon" title={copy.ed_up} onClick={() => moveProject(i, -1)} disabled={i === 0}>↑</button>
-                  <button type="button" className="ed-icon" title={copy.ed_down} onClick={() => moveProject(i, 1)} disabled={i === projects.length - 1}>↓</button>
-                  <button type="button" className="ed-icon ed-icon--danger" title={copy.ed_delete} onClick={() => removeProject(i)}>✕</button>
+                  <button type="button" className="ed-icon" title={t.ed_up} onClick={() => moveProject(i, -1)} disabled={i === 0}>↑</button>
+                  <button type="button" className="ed-icon" title={t.ed_down} onClick={() => moveProject(i, 1)} disabled={i === projects.length - 1}>↓</button>
+                  <button type="button" className="ed-icon ed-icon--danger" title={t.ed_delete} onClick={() => removeProject(i)}>✕</button>
                 </div>
               </div>
             ))}
@@ -194,26 +199,26 @@ export default function ProjectEditor({ projects, setProjects, copy, lang, onClo
 
           {/* ---- форма ---- */}
           <section className="ed-form">
-            {!current && <p className="ed-empty">{copy.ed_empty}</p>}
+            {!current && <p className="ed-empty">{t.ed_empty}</p>}
 
             {current && (
               <>
-                <h3 className="ed-section">{copy.ed_fields}</h3>
+                <h3 className="ed-section">{t.ed_fields}</h3>
                 <div className="ed-row4">
-                  <Text label={copy.ed_f_id}     value={current.id}     onChange={(id) => patch({ id })} />
-                  <Text label={copy.ed_f_num}    value={current.num}    onChange={(num) => patch({ num })} />
-                  <Text label={copy.ed_f_year}   value={current.year}   onChange={(year) => patch({ year })} />
-                  <Text label={copy.ed_f_engine} value={current.engine} onChange={(engine) => patch({ engine })} />
+                  <Text label={t.ed_f_id}     value={current.id}     onChange={(id) => patch({ id })} />
+                  <Text label={t.ed_f_num}    value={current.num}    onChange={(num) => patch({ num })} />
+                  <Text label={t.ed_f_year}   value={current.year}   onChange={(year) => patch({ year })} />
+                  <Text label={t.ed_f_engine} value={current.engine} onChange={(engine) => patch({ engine })} />
                 </div>
 
                 <label className="ed-field">
-                  <span className="ed-label">{copy.ed_f_status}</span>
+                  <span className="ed-label">{t.ed_f_status}</span>
                   <select
                     className="ed-input"
                     value={current.status}
                     onChange={(e) => patch({ status: e.target.value as ProjectStatus })}
                   >
-                    <option value="">{copy.ed_statusNone}</option>
+                    <option value="">{t.ed_statusNone}</option>
                     {STATUS_ORDER.map((k) => (
                       <option key={k} value={k}>{STATUS[k][lang]}</option>
                     ))}
@@ -221,32 +226,32 @@ export default function ProjectEditor({ projects, setProjects, copy, lang, onClo
                 </label>
 
                 <Text
-                  label={copy.ed_f_tags}
+                  label={t.ed_f_tags}
                   value={current.tags.join(", ")}
                   onChange={(v) => patch({ tags: v.split(",").map((t) => t.trim()).filter(Boolean) })}
                 />
 
                 <ImageDrop
-                  label={copy.ed_f_cover}
+                  label={t.ed_f_cover}
                   value={current.cover}
                   onChange={(cover) => patch({ cover })}
-                  hint={copy.ed_dropHint}
-                  pickLabel={copy.ed_pickFile}
-                  urlLabel={copy.ed_f_src}
-                  clearLabel={copy.ed_remove}
+                  hint={t.ed_dropHint}
+                  pickLabel={t.ed_pickFile}
+                  urlLabel={t.ed_f_src}
+                  clearLabel={t.ed_remove}
                 />
 
-                <Pair label={copy.ed_f_title}     value={current.title}     onChange={(title) => patch({ title })} />
-                <Pair label={copy.ed_f_subtitle}  value={current.subtitle}  onChange={(subtitle) => patch({ subtitle })} />
-                <Pair label={copy.ed_f_desc}      value={current.description} onChange={(description) => patch({ description })} area />
-                <Pair label={copy.ed_f_myRole}    value={current.myRole}    onChange={(myRole) => patch({ myRole })} />
-                <Text label={copy.ed_f_linkUrl}   value={current.linkUrl}   onChange={(linkUrl) => patch({ linkUrl })} />
-                <Pair label={copy.ed_f_linkLabel} value={current.linkLabel} onChange={(linkLabel) => patch({ linkLabel })} />
+                <Pair label={t.ed_f_title}     value={current.title}     onChange={(title) => patch({ title })} />
+                <Pair label={t.ed_f_subtitle}  value={current.subtitle}  onChange={(subtitle) => patch({ subtitle })} />
+                <Pair label={t.ed_f_desc}      value={current.description} onChange={(description) => patch({ description })} area />
+                <Pair label={t.ed_f_myRole}    value={current.myRole}    onChange={(myRole) => patch({ myRole })} />
+                <Text label={t.ed_f_linkUrl}   value={current.linkUrl}   onChange={(linkUrl) => patch({ linkUrl })} />
+                <Pair label={t.ed_f_linkLabel} value={current.linkLabel} onChange={(linkLabel) => patch({ linkLabel })} />
 
                 {/* ---- скриншоты ---- */}
-                <h3 className="ed-section">{copy.ed_shots}</h3>
+                <h3 className="ed-section">{t.ed_shots}</h3>
                 <BulkDrop
-                  hint={copy.ed_dropHint}
+                  hint={t.ed_dropHint}
                   onFiles={async (files) => {
                     const added = await Promise.all(files.map(imageFileToDataUrl));
                     patch({ images: [...current.images, ...added.map((src) => ({ src, caption: { ru: "", en: "" } }))] });
@@ -257,33 +262,33 @@ export default function ProjectEditor({ projects, setProjects, copy, lang, onClo
                     <div className="ed-sub__head">
                       <span className="ed-label">#{i + 1}</span>
                       <div className="ed-item__side">
-                        <button type="button" className="ed-icon" title={copy.ed_up} disabled={i === 0}
+                        <button type="button" className="ed-icon" title={t.ed_up} disabled={i === 0}
                           onClick={() => {
                             const next = [...current.images];
                             [next[i - 1], next[i]] = [next[i], next[i - 1]];
                             patch({ images: next });
                           }}>↑</button>
-                        <button type="button" className="ed-icon" title={copy.ed_down} disabled={i === current.images.length - 1}
+                        <button type="button" className="ed-icon" title={t.ed_down} disabled={i === current.images.length - 1}
                           onClick={() => {
                             const next = [...current.images];
                             [next[i + 1], next[i]] = [next[i], next[i + 1]];
                             patch({ images: next });
                           }}>↓</button>
-                        <button type="button" className="ed-icon ed-icon--danger" title={copy.ed_remove}
+                        <button type="button" className="ed-icon ed-icon--danger" title={t.ed_remove}
                           onClick={() => patch({ images: current.images.filter((_, k) => k !== i) })}>✕</button>
                       </div>
                     </div>
                     <ImageDrop
-                      label={copy.ed_f_src}
+                      label={t.ed_f_src}
                       value={img.src}
                       onChange={(src) => patch({ images: current.images.map((x, k) => (k === i ? { ...x, src } : x)) })}
-                      hint={copy.ed_dropHint}
-                      pickLabel={copy.ed_pickFile}
-                      urlLabel={copy.ed_f_src}
-                      clearLabel={copy.ed_remove}
+                      hint={t.ed_dropHint}
+                      pickLabel={t.ed_pickFile}
+                      urlLabel={t.ed_f_src}
+                      clearLabel={t.ed_remove}
                     />
                     <Pair
-                      label={copy.ed_f_caption}
+                      label={t.ed_f_caption}
                       value={img.caption}
                       onChange={(caption) => patch({ images: current.images.map((x, k) => (k === i ? { ...x, caption } : x)) })}
                     />
@@ -291,41 +296,41 @@ export default function ProjectEditor({ projects, setProjects, copy, lang, onClo
                 ))}
                 <button type="button" className="ed-btn"
                   onClick={() => patch({ images: [...current.images, { src: "", caption: { ru: "", en: "" } }] })}>
-                  + {copy.ed_addShot}
+                  + {t.ed_addShot}
                 </button>
 
                 {/* ---- команда ---- */}
-                <h3 className="ed-section">{copy.ed_team}</h3>
+                <h3 className="ed-section">{t.ed_team}</h3>
                 {current.team.map((m, i) => (
                   <div className="ed-sub" key={i}>
                     <div className="ed-sub__head">
                       <span className="ed-label">#{i + 1}</span>
-                      <button type="button" className="ed-icon ed-icon--danger" title={copy.ed_remove}
+                      <button type="button" className="ed-icon ed-icon--danger" title={t.ed_remove}
                         onClick={() => patch({ team: current.team.filter((_, k) => k !== i) })}>✕</button>
                     </div>
                     <div className="ed-row2">
-                      <Text label={copy.ed_f_name} value={m.name}
+                      <Text label={t.ed_f_name} value={m.name}
                         onChange={(name) => patch({ team: current.team.map((x, k) => (k === i ? { ...x, name } : x)) })} />
-                      <Text label={copy.ed_f_email} value={m.email ?? ""}
+                      <Text label={t.ed_f_email} value={m.email ?? ""}
                         onChange={(email) => patch({ team: current.team.map((x, k) => (k === i ? { ...x, email } : x)) })} />
                     </div>
-                    <Pair label={copy.ed_f_role} value={m.role}
+                    <Pair label={t.ed_f_role} value={m.role}
                       onChange={(role) => patch({ team: current.team.map((x, k) => (k === i ? { ...x, role } : x)) })} />
                     <ImageDrop
-                      label={copy.ed_f_avatar}
+                      label={t.ed_f_avatar}
                       value={m.avatar}
                       round
                       onChange={(avatar) => patch({ team: current.team.map((x, k) => (k === i ? { ...x, avatar } : x)) })}
-                      hint={copy.ed_dropHint}
-                      pickLabel={copy.ed_pickFile}
-                      urlLabel={copy.ed_f_src}
-                      clearLabel={copy.ed_remove}
+                      hint={t.ed_dropHint}
+                      pickLabel={t.ed_pickFile}
+                      urlLabel={t.ed_f_src}
+                      clearLabel={t.ed_remove}
                     />
                   </div>
                 ))}
                 <button type="button" className="ed-btn"
                   onClick={() => patch({ team: [...current.team, { name: "", role: { ru: "", en: "" }, avatar: "", email: "" }] })}>
-                  + {copy.ed_addMember}
+                  + {t.ed_addMember}
                 </button>
               </>
             )}

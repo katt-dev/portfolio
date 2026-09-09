@@ -1,12 +1,15 @@
 // ============================================================================
 //   ХРАНИЛИЩЕ ПРОЕКТОВ (служебный файл — трогать не нужно)
 //
-//   Сайт берёт проекты отсюда:
-//     1) если в этом браузере есть локальные правки из редактора — берёт их;
-//     2) иначе — берёт PROJECTS из settings.ts.
+//   На опубликованном сайте проекты ВСЕГДА берутся из settings.ts.
 //
-//   Локальные правки живут только на твоём компьютере. Чтобы они попали
-//   на сайт для всех — в редакторе нажми «Скопировать код для settings.ts».
+//   Черновики редактора (localStorage) читаются и пишутся только при
+//   локальном запуске npm run dev. Поэтому посетитель сайта не может
+//   ничего сохранить или подменить даже у себя в браузере, а ты не
+//   рискуешь увидеть на сайте случайный черновик вместо настоящих данных.
+//
+//   Чтобы правки попали на сайт — в редакторе нажми
+//   «Скопировать код для settings.ts» и вставь их в settings.ts.
 // ============================================================================
 
 import {
@@ -15,7 +18,9 @@ import {
 } from "./settings";
 
 export const STORAGE_KEY = "katt.projects.v1";
-export const ADMIN_KEY = "katt.admin.v1";
+
+// Черновики доступны только при локальной разработке.
+const DRAFTS_ENABLED = import.meta.env.DEV;
 
 // ---------------------------------------------------------------------------
 //  Нормализация — чтобы кривой/старый JSON не уронил сайт
@@ -75,6 +80,7 @@ export const defaultProjects = (): Project[] => normalizeProjects(PROJECTS);
 
 /** Что показывать на сайте прямо сейчас. */
 export function loadProjects(): Project[] {
+  if (!DRAFTS_ENABLED) return defaultProjects();
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultProjects();
@@ -88,6 +94,7 @@ export function loadProjects(): Project[] {
 }
 
 export function saveProjects(projects: Project[]): { ok: true } | { ok: false; error: string } {
+  if (!DRAFTS_ENABLED) return { ok: true };
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
     return { ok: true };

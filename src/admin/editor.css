@@ -1,0 +1,175 @@
+/* ===========================================================================
+   СТИЛИ РЕДАКТОРА ПРОЕКТОВ.
+
+   Отдельный файл: его подключает только сам редактор, а он собирается лишь
+   при локальном запуске (npm run dev). В файл, который выкладывается на
+   сайт, эти стили не попадают — там нет ни классов, ни намёка на редактор.
+   =========================================================================== */
+
+.ed-overlay {
+  position: fixed; inset: 0; z-index: 300;
+  background: color-mix(in srgb, var(--bg) 78%, #000);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  display: flex; padding: 24px; overflow: auto;
+}
+.ed-panel {
+  position: relative;
+  margin: auto; width: min(1180px, 100%);
+  background: var(--bg); color: var(--text);
+  border: 1px solid var(--text); box-shadow: var(--shadow);
+  padding: 20px 22px 26px;
+}
+.ed-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+}
+.ed-head__title { font-size: clamp(24px, 3vw, 34px); margin: 0; }
+.ed-head__actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.ed-note {
+  margin: 12px 0 18px; font-size: 13px; line-height: 1.6;
+  color: var(--text-muted); max-width: 90ch;
+}
+.ed-body {
+  display: grid; grid-template-columns: 300px minmax(0, 1fr);
+  gap: 22px; align-items: start;
+}
+@media (max-width: 860px) {
+  .ed-body { grid-template-columns: 1fr; }
+  .ed-overlay { padding: 12px; }
+  .ed-panel { padding: 16px; }
+}
+
+/* --- список проектов --- */
+.ed-list {
+  display: flex; flex-direction: column; gap: 8px;
+  border: 1px solid var(--line-strong); padding: 12px; background: var(--surface);
+  position: sticky; top: 12px; max-height: calc(100vh - 220px); overflow: auto;
+}
+@media (max-width: 860px) { .ed-list { position: static; max-height: none; } }
+.ed-list__head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; margin-bottom: 4px;
+}
+.ed-item {
+  display: flex; align-items: stretch; gap: 6px;
+  border: 1px solid var(--line-strong); background: var(--bg);
+}
+.ed-item.is-active { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.ed-item__main {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px;
+  padding: 8px; background: none; border: none; cursor: pointer;
+  color: inherit; text-align: left; font: inherit;
+}
+.ed-item__thumb {
+  width: 44px; height: 34px; object-fit: cover; flex-shrink: 0;
+  border: 1px solid var(--line-strong);
+}
+.ed-item__thumb--empty { background: var(--surface-2); display: block; }
+.ed-item__text { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ed-item__title {
+  font-size: 14px; font-weight: 500;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ed-item__meta {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px; color: var(--text-muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ed-item__side { display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 4px; }
+.ed-sub .ed-item__side { flex-direction: row; }
+
+.ed-icon {
+  width: 22px; height: 20px; line-height: 1;
+  border: 1px solid var(--line-strong); background: var(--surface);
+  color: var(--text-muted); cursor: pointer; font-size: 11px; border-radius: 2px;
+}
+.ed-icon:hover:not(:disabled) { color: var(--text); border-color: var(--text); }
+.ed-icon:disabled { opacity: 0.3; cursor: default; }
+.ed-icon--danger:hover:not(:disabled) { color: #fff; background: var(--accent); border-color: var(--accent); }
+
+/* --- форма --- */
+.ed-form { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.ed-section {
+  margin: 14px 0 0; padding-top: 14px; border-top: 1px solid var(--line-strong);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-muted); font-weight: 400;
+}
+.ed-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.ed-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-muted);
+}
+.ed-input {
+  width: 100%; padding: 8px 10px; font: inherit; font-size: 14px;
+  color: var(--text); background: var(--surface);
+  border: 1px solid var(--line-strong); border-radius: 2px;
+}
+.ed-input:focus { outline: none; border-color: var(--accent); }
+.ed-input--area { resize: vertical; line-height: 1.6; }
+.ed-input--url { font-size: 12px; font-family: "JetBrains Mono", monospace; }
+.ed-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ed-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ed-row4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+@media (max-width: 720px) {
+  .ed-pair, .ed-row2, .ed-row4 { grid-template-columns: 1fr; }
+}
+.ed-sub {
+  display: flex; flex-direction: column; gap: 10px;
+  border: 1px solid var(--line-strong); padding: 12px; background: var(--surface);
+}
+.ed-sub__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ed-empty { color: var(--text-muted); font-size: 14px; margin: 8px 0; }
+
+/* --- кнопки --- */
+.ed-btn {
+  padding: 8px 12px; font: inherit; font-size: 13px; cursor: pointer;
+  color: var(--text); background: var(--surface);
+  border: 1px solid var(--line-strong); border-radius: 2px;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+.ed-btn:hover { border-color: var(--text); }
+.ed-btn--sm { padding: 5px 9px; font-size: 12px; }
+.ed-btn--solid { background: var(--text); color: var(--bg); border-color: var(--text); }
+.ed-btn--solid:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+.ed-btn--danger:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* --- зона перетаскивания картинок --- */
+.ed-drop {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  min-height: 120px; padding: 12px; cursor: copy; text-align: center;
+  border: 1.5px dashed var(--line-strong); background: var(--surface-2);
+  border-radius: 2px; transition: border-color 0.2s, background 0.2s;
+}
+.ed-drop:focus-visible, .ed-drop.is-focused { outline: none; border-color: var(--text); }
+.ed-drop.is-over { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface-2)); }
+.ed-drop--bulk { min-height: 84px; }
+.ed-drop__hint {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px; line-height: 1.6; color: var(--text-muted); max-width: 34ch;
+}
+.ed-drop__preview {
+  max-height: 220px; max-width: 100%; object-fit: contain; display: block;
+}
+.ed-drop__preview.is-round {
+  width: 72px; height: 72px; border-radius: 999px; object-fit: cover;
+}
+.ed-drop.is-busy { opacity: 0.6; }
+.ed-drop__busy {
+  position: absolute; inset: auto 10px 10px auto;
+  width: 14px; height: 14px; border-radius: 999px;
+  border: 2px solid var(--line-strong); border-top-color: var(--accent);
+  animation: ed-spin 0.7s linear infinite;
+}
+@keyframes ed-spin { to { transform: rotate(360deg); } }
+.ed-drop__actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+
+/* --- всплывающее сообщение --- */
+.ed-toast {
+  position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%);
+  z-index: 320; max-width: min(70ch, calc(100vw - 32px));
+  padding: 10px 16px; font-size: 13px; line-height: 1.5;
+  color: var(--bg); background: var(--text);
+  border-radius: 2px; box-shadow: var(--shadow-sm);
+}
