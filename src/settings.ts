@@ -66,9 +66,9 @@ export interface Project {
 //  1. ПРО СЕБЯ — имя, контакты, портрет
 // ============================================================================
 
-export const NAME       = "Савелий Титов";           // полное имя (футер, подпись у фото)
+export const NAME       = "katt";           // полное имя (футер, подпись у фото)
 export const EMAIL      = ""; // почта для кнопки «Написать»
-export const DISCORD    = "Discord: @katt.dev"; // строка под почтой в «Контактах»
+export const DISCORD    = "Telegram: @katt_dev\nDiscord: @katt.dev"; // строка под почтой в «Контактах»
 export const BADGE      = "Game Developer";
 
 // Портрет на главном экране — вставь ссылку на своё фото:
@@ -80,31 +80,31 @@ export const PORTRAIT   = "https://allwebs.ru/images/2026/09/08/a5da47961c2b1621
 
 export const UI = {
   ru: {
-    firstName:   "Савелий",
-    lastName:    "Титов",
-    logo:        "Т. Савелий // Gamedev",
-    location:    "Студии «Ancy Forge Studio» «Ahaha Studio» · ",
-    heroBio:     "",
+    firstName:   "katt",
+    lastName:    "",
+    logo:        "katt",
+    location:    "Ahaha Studio(Основная) · Ancy Forge Studio(Неофициальная)",
+    heroBio:     "Game Developer · C# · Unity · Godot 4",
     about: [
-      "",
-      "",
-      "",
+      "Я разработчик игр, специализирующийся на создании игр под ключ. ",
+      "Самостоятельно занимаюсь практически всеми аспектами разработки - от проектирования игровой логики и интерфейса до работы с механиками, системами и визуальной частью.",
+      "Единственное направление, которым я не занимаюсь, - серверная разработка.",
     ],
     navProjects: "Проекты",
     navAbout:    "Обо мне",
     navContact:  "Контакты",
     viewWork:    "Смотреть проекты",
-    writeMe:     "Написать",
+    writeMe:     "Написать на почту",
     featured:    "Избранные проекты",
     clickHint:   "Нажми на блок, чтобы открыть кейс",
     aboutTitle:  "Обо мне",
     aboutSub:    "Краткая биография",
     contactMe:   "Связаться со мной",
-    contactNote: "Открыт для интересных проектов, консультаций и разговоров о геймдеве. Обычно отвечаю в течение суток.",
+    contactNote: "Открыт для интересных проектов, консультаций и разговоров о геймдеве. Обычно отвечаю в течение 3-х часов.",
     handmade:    "Сделано на заказ",
     teamLabel:   "Команда проекта",
     roleLabel:   "Моя роль",
-    mailBtn:     "Написать на почту",
+    mailBtn:     "Написать руководителю",
     settings:    "Настройки",
     language:    "Язык сайта",
     langHint:    "Выбор запоминается и не сбрасывается после перезагрузки.",
@@ -113,13 +113,13 @@ export const UI = {
     settingsAria:"Открыть настройки",
   },
   en: {
-    firstName:   "Saveliy",
-    lastName:    "Titov",
-    logo:        "T. Saveliy // Gamedev",
-    location:    "studio «Ahaha Studio» «Ancy Forge Studio» · Year",
-    heroBio:     "",
+    firstName:   "katt",
+    lastName:    "",
+    logo:        "katt",
+    location:    "Studios: «Ahaha Studio» «Ancy Forge Studio»",
+    heroBio:     "Unity · Godot 4",
     about: [
-      "",
+      "Coding in Python, C#, GDScript.",
       "",
       "",
     ],
@@ -169,7 +169,7 @@ export const PROJECTS: Project[] = [
     // ▼▼▼ ОБЛОЖКА КАРТОЧКИ — меняй ссылку ниже ▼▼▼
     cover: "https://allwebs.ru/images/2026/09/08/14f4b94773a872806a5f8385f8abc186.png",
 
-    title:       { ru: "ПиВорлд", en: "PiWorld" },
+    title:       { ru: "Piworld", en: "Piworld" },
     subtitle:    { ru: "", en: "" },
     description: { ru: "", en: "" },
     myRole:      { ru: "General developer / Главный разработчик", en: "General developer / Lead Developer" },
@@ -181,151 +181,11 @@ export const PROJECTS: Project[] = [
     images: [
       { src: "https://allwebs.ru/images/2026/09/08/005dfe359ce32db63ade00aba6fb64c8.jpg", caption: { ru: "Меню", en: "Menu" } },
       { src: "https://allwebs.ru/images/2026/09/08/5e773898998094456e2791ddd72859a9.png", caption: { ru: "Страница в магазине", en: "Steam page" } },
-      { src: "", caption: { ru: "-", en: "-" } },
     ],
     team: [
       { name: "Kippen",   role: { ru: "General Designer", en: "General Designer" }, avatar: "https://allwebs.ru/images/2026/09/08/395cbb25753439f45f604551eaba35ee.png" },
       { name: "Santiago",  role: { ru: "Server Developer",         en: "Server Developer" },         avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg" },
       { name: "Serkov1ch", role: { ru: "Team Leader",      en: "Team Leader" },      avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg" },
-    ],
-  },
-  {
-    id: "iron-convoy",
-    num: "02",
-    year: "2024",
-    engine: "Unity 6",
-    tags: ["Unity · C#", "Tactical Roguelite", "Procedural"],
-
-    // ▼▼▼ ОБЛОЖКА КАРТОЧКИ — меняй ссылку ниже ▼▼▼
-    cover: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png",
-
-    title:       { ru: "Iron Convoy 2084", en: "Iron Convoy 2084" },
-    subtitle:    { ru: "Тактический roguelite о бронепоезде в постапокалиптической пустоши", en: "Tactical roguelite about an armored train in a post-apocalyptic waste" },
-    description: { ru: "Игрок управляет экипажем гигантского бронепоезда, модернизирует вагоны-турели и распределяет энергию реактора в реальном времени. Я спроектировал процедурную генерацию маршрутов, баллистику орудий и систему повреждений отсеков.", en: "The player runs the crew of a giant armored train, upgrades turret cars and allocates reactor power in real time. I designed procedural route generation, gun ballistics, and a compartment damage system." },
-    myRole:      { ru: "Systems Designer & Lead Programmer", en: "Systems Designer & Lead Programmer" },
-
-    // ССЫЛКА НА СТРАНИЦУ ИГРЫ (Steam / itch.io / сайт). Пусто = кнопка скрыта
-    linkUrl:     "",
-    linkLabel:   { ru: "Страница в Steam", en: "View on Steam" },
-
-    images: [
-      { src: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png", caption: { ru: "Тактическое управление вагонами", en: "Tactical control of the train cars" } },
-      { src: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png", caption: { ru: "Прототипирование отсеков", en: "Prototyping the compartments" } },
-    ],
-    team: [
-      { name: "Денис Ковалёв", role: { ru: "2D/3D Concept Artist", en: "2D/3D Concept Artist" }, avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg" },
-      { name: "Ольга Ветрова", role: { ru: "UI/UX & VFX Artist",   en: "UI/UX & VFX Artist" },   avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg" },
-    ],
-  },
-  {
-    id: "kobold-protocol",
-    num: "03",
-    year: "2024",
-    engine: "Unreal Engine 5",
-    tags: ["Co-op Multiplayer", "Netcode", "Physics Stealth"],
-
-    // ▼▼▼ ОБЛОЖКА КАРТОЧКИ — меняй ссылку ниже ▼▼▼
-    cover: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png",
-
-    title:       { ru: "Kobold Protocol", en: "Kobold Protocol" },
-    subtitle:    { ru: "Кооперативный стелс-экшен на 4 игроков с физикой окружения", en: "4-player co-op stealth-action with environmental physics" },
-    description: { ru: "Командный стелс-экшен, где игроки проникают в процедурно генерируемые подземные комплексы. Написал сетевую синхронизацию физики предметов, голосовую рацию с затуханием звука по геометрии уровня и кооперативные гаджеты.", en: "A team stealth-action where players infiltrate procedurally generated underground complexes. I wrote networked physics sync for props, a voice radio that occludes by level geometry, and co-op gadgets." },
-    myRole:      { ru: "Network & Gameplay Programmer", en: "Network & Gameplay Programmer" },
-
-    // ССЫЛКА НА СТРАНИЦУ ИГРЫ (Steam / itch.io / сайт). Пусто = кнопка скрыта
-    linkUrl:     "https://store.steampowered.com/",
-    linkLabel:   { ru: "Страница в Steam", en: "View on Steam" },
-
-    images: [
-      { src: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png", caption: { ru: "Тестирование сетевой синхронизации", en: "Testing network synchronization" } },
-      { src: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png", caption: { ru: "Подземные лаборатории и ночное видение", en: "Underground labs and night vision" } },
-    ],
-    team: [
-      { name: "Артём Морозов", role: { ru: "Level Designer",    en: "Level Designer" },    avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg" },
-      { name: "Ксения Ли",    role: { ru: "Character Animator", en: "Character Animator" }, avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg" },
-    ],
-  },
-  {
-    id: "chronos-drift",
-    num: "04",
-    year: "2023",
-    engine: "Unreal Engine 5",
-    tags: ["Action Slasher", "Custom Shaders", "Combat System"],
-
-    // ▼▼▼ ОБЛОЖКА КАРТОЧКИ — меняй ссылку ниже ▼▼▼
-    cover: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png",
-
-    title:       { ru: "Chronos Drift", en: "Chronos Drift" },
-    subtitle:    { ru: "Динамичный слэшер с механикой перемотки времени в бою", en: "Fast slasher with a combat time-rewind mechanic" },
-    description: { ru: "Боевая система строится на записи последних 5 секунд действий игрока и мгновенном создании временного клона, повторяющего удары. Сделал кастомную буферизацию трансформов и анимаций без просадки FPS.", en: "Combat is built around recording the last 5 seconds of player actions and spawning a time-clone that repeats the strikes. Custom transform and animation buffering, no FPS drop." },
-    myRole:      { ru: "Combat Designer / Tech Artist", en: "Combat Designer / Tech Artist" },
-
-    // ССЫЛКА НА СТРАНИЦУ ИГРЫ (Steam / itch.io / сайт). Пусто = кнопка скрыта
-    linkUrl:     "https://store.steampowered.com/",
-    linkLabel:   { ru: "Страница в Steam", en: "View on Steam" },
-
-    images: [
-      { src: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png", caption: { ru: "Шлейф временного клона", en: "Time-clone trail" } },
-      { src: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png", caption: { ru: "Хитбоксы и тайминги комбо", en: "Hitboxes and combo timings" } },
-    ],
-    team: [
-      { name: "Роман Белов",   role: { ru: "VFX & Shader Artist",    en: "VFX & Shader Artist" },    avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg" },
-      { name: "Марина Савина", role: { ru: "Композитор саундтрека",  en: "Composer" },               avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg" },
-    ],
-  },
-  {
-    id: "signal-lost",
-    num: "05",
-    year: "2023",
-    engine: "Godot 4",
-    tags: ["Godot 4 · GDScript", "Narrative Puzzle", "Retro 3D"],
-
-    // ▼▼▼ ОБЛОЖКА КАРТОЧКИ — меняй ссылку ниже ▼▼▼
-    cover: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png",
-
-    title:       { ru: "Signal Lost: Station 9", en: "Signal Lost: Station 9" },
-    subtitle:    { ru: "Ретро-футуристический детектив на полярной радиостанции", en: "Retro-futurist detective on a polar radio station" },
-    description: { ru: "Игрок расшифровывает радиоперехваты на аналоговой аппаратуре 80-х годов, вращает антенны и сопоставляет координаты. Все приборы в комнате полностью интерактивны — каждый тумблер и осциллограф работают по законам радиотехники.", en: "The player decrypts radio intercepts on 1980s analog gear, rotates antennas and matches coordinates. Every device in the room is fully interactive — switches and oscilloscopes follow real radio physics." },
-    myRole:      { ru: "Gameplay Programmer & Sound Integrator", en: "Gameplay Programmer & Sound Integrator" },
-
-    // ССЫЛКА НА СТРАНИЦУ ИГРЫ (Steam / itch.io / сайт). Пусто = кнопка скрыта
-    linkUrl:     "https://store.steampowered.com/",
-    linkLabel:   { ru: "Страница в Steam", en: "View on Steam" },
-
-    images: [
-      { src: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png", caption: { ru: "Интерактивная радиорубка", en: "Interactive radio room" } },
-      { src: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png", caption: { ru: "Журнал дешифровки сигналов", en: "Signal decryption log" } },
-    ],
-    team: [
-      { name: "Павел Зотов", role: { ru: "3D Prop Artist", en: "3D Prop Artist" }, avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg" },
-    ],
-  },
-  {
-    id: "boreal-tools",
-    num: "06",
-    year: "2022",
-    engine: "UE5 Plugin · C++",
-    tags: ["Unreal Plugin", "Tools Dev", "Open Source"],
-
-    // ▼▼▼ ОБЛОЖКА КАРТОЧКИ — меняй ссылку ниже ▼▼▼
-    cover: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png",
-
-    title:       { ru: "Boreal Dialogue Kit", en: "Boreal Dialogue Kit" },
-    subtitle:    { ru: "Плагин для нелинейных диалогов и квестов в UE5 — Open Source", en: "Open-source UE5 plugin for branching dialogue and quests" },
-    description: { ru: "Инструментарий для нашей команды и других инди-разработчиков. Позволяет сценаристам собирать ветвящиеся диалоги и условия квестов в нодовом графе с мгновенной проверкой переменных и экспортом локализации.", en: "A toolkit for our team and other indie developers. Writers assemble branching dialogue and quest conditions in a node graph with live variable checks and localization export." },
-    myRole:      { ru: "Tools Programmer / Автор плагина", en: "Tools Programmer / Plugin author" },
-
-    // ССЫЛКА НА СТРАНИЦУ ИГРЫ (Steam / itch.io / сайт). Пусто = кнопка скрыта
-    linkUrl:     "https://github.com/",
-    linkLabel:   { ru: "Открыть исходники", en: "View source" },
-
-    images: [
-      { src: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png", caption: { ru: "Нодовый граф диалогов в UE5", en: "Dialogue node graph in UE5" } },
-      { src: "https://allwebs.ru/images/2026/09/08/67e74e25cbff0f15d4b2b81d3bdd1e85.png", caption: { ru: "Локализация и озвучка", en: "Localization and voiceover" } },
-    ],
-    team: [
-      { name: "Алиса Громова", role: { ru: "UX для сценаристов",          en: "Writer UX" },                avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg" },
-      { name: "Илья Сорокин",  role: { ru: "Техническая документация",    en: "Technical documentation" },  avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg" },
     ],
   },
 ];
