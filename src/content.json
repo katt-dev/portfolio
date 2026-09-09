@@ -18,6 +18,11 @@
       "label": "Steam",
       "value": "katt-dev",
       "url": ""
+    },
+    {
+      "label": "Itch",
+      "value": "ca1tt",
+      "url": ""
     }
   ],
   "showContactHint": false,
