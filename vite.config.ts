@@ -10,6 +10,9 @@ const __dirname = path.dirname(__filename);
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Относительные пути: сайт одинаково работает и в корне домена (Netlify),
+  // и в подпапке вида ka1tt.github.io/portfolio/ (GitHub Pages).
+  base: "./",
   plugins: [react(), tailwindcss(), viteSingleFile()],
   resolve: {
     alias: {

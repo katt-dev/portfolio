@@ -1,0 +1,62 @@
+# ============================================================================
+#   Автоматическая сборка и публикация сайта на GitHub Pages.
+#
+#   Как это работает: ты правишь src/settings.ts и делаешь commit + push
+#   в ветку main — GitHub сам собирает сайт и выкладывает свежую версию.
+#   Ничего копировать руками не нужно.
+#
+#   ВАЖНО, СДЕЛАТЬ ОДИН РАЗ:
+#   Settings -> Pages -> Build and deployment -> Source -> "GitHub Actions"
+# ============================================================================
+
+name: Deploy site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # позволяет запустить сборку вручную из вкладки Actions
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Если пушей несколько подряд — публикуем только последний.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # npm ci быстрее, но требует package-lock.json в точности по package.json.
+      # Если он разошёлся — откатываемся на обычный npm install.
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+
+      - name: Build
+        run: npm run build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
