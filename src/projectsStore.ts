@@ -1,14 +1,14 @@
 // ============================================================================
 //   ХРАНИЛИЩЕ ПРОЕКТОВ (служебный файл — трогать не нужно)
 //
-//   На опубликованном сайте проекты ВСЕГДА берутся из settings.ts.
+//   Обычный посетитель ВСЕГДА видит проекты из settings.ts.
 //
-//   Черновики редактора (localStorage) читаются и пишутся только при
-//   локальном запуске npm run dev. Поэтому посетитель сайта не может
-//   ничего сохранить или подменить даже у себя в браузере, а ты не
-//   рискуешь увидеть на сайте случайный черновик вместо настоящих данных.
+//   Черновики редактора (localStorage) читаются и пишутся только у того,
+//   кого сайт узнал по секретному адресу, — то есть у тебя. Поэтому чужой
+//   браузер ничего не сохранит, а ты не рискуешь увидеть вместо настоящих
+//   данных чей-то случайный черновик.
 //
-//   Чтобы правки попали на сайт — в редакторе нажми
+//   Чтобы правки попали на сайт для всех — в редакторе нажми
 //   «Скопировать код для settings.ts» и вставь их в settings.ts.
 // ============================================================================
 
@@ -16,11 +16,9 @@ import {
   PROJECTS, STATUS_ORDER,
   type Project, type ProjectImage, type ProjectStatus, type TeamMember, type TextPair,
 } from "./settings";
+import { isAdminUnlocked } from "./adminAccess";
 
 export const STORAGE_KEY = "katt.projects.v1";
-
-// Черновики доступны только при локальной разработке.
-const DRAFTS_ENABLED = import.meta.env.DEV;
 
 // ---------------------------------------------------------------------------
 //  Нормализация — чтобы кривой/старый JSON не уронил сайт
@@ -80,7 +78,7 @@ export const defaultProjects = (): Project[] => normalizeProjects(PROJECTS);
 
 /** Что показывать на сайте прямо сейчас. */
 export function loadProjects(): Project[] {
-  if (!DRAFTS_ENABLED) return defaultProjects();
+  if (!isAdminUnlocked()) return defaultProjects();
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultProjects();
@@ -94,7 +92,7 @@ export function loadProjects(): Project[] {
 }
 
 export function saveProjects(projects: Project[]): { ok: true } | { ok: false; error: string } {
-  if (!DRAFTS_ENABLED) return { ok: true };
+  if (!isAdminUnlocked()) return { ok: true };
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
     return { ok: true };

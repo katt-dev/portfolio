@@ -23,6 +23,7 @@ import {
 } from "../projectsStore";
 import ImageDrop from "./ImageDrop";
 import { ED } from "./editorTexts";
+import { actionsUrl, getToken, maskToken, publishProjects, setToken } from "./publish";
 import "./editor.css";
 
 // ---------------------------------------------------------------------------
@@ -67,6 +68,10 @@ export default function ProjectEditor({ projects, setProjects, lang, onClose }: 
   const t = ED[lang];
   const [selected, setSelected] = useState(0);
   const [toast, setToast] = useState("");
+  const [token, setTokenState] = useState(() => getToken());
+  const [tokenDraft, setTokenDraft] = useState("");
+  const [publishing, setPublishing] = useState(false);
+  const [lastCommit, setLastCommit] = useState("");
   const toastTimer = useRef<number | undefined>(undefined);
 
   const flash = (msg: string) => {
@@ -136,6 +141,29 @@ export default function ProjectEditor({ projects, setProjects, lang, onClose }: 
     }
   };
 
+  const publish = async () => {
+    setPublishing(true);
+    setLastCommit("");
+    const res = await publishProjects(toJson(projects), token, lang);
+    setPublishing(false);
+    if (res.commitUrl) setLastCommit(res.commitUrl);
+    flash(res.message);
+  };
+
+  const saveToken = () => {
+    const v = tokenDraft.trim();
+    if (!v) return;
+    setToken(v);
+    setTokenState(v);
+    setTokenDraft("");
+    flash(t.ed_tokenSaved);
+  };
+
+  const clearToken = () => {
+    setToken("");
+    setTokenState("");
+  };
+
   // Esc закрывает редактор.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -151,6 +179,9 @@ export default function ProjectEditor({ projects, setProjects, lang, onClose }: 
         <header className="ed-head">
           <h2 className="display ed-head__title">{t.ed_title}</h2>
           <div className="ed-head__actions">
+            <button type="button" className="ed-btn ed-btn--publish" onClick={publish} disabled={publishing || !token}>
+              {publishing ? t.ed_publishing : t.ed_publish}
+            </button>
             <button type="button" className="ed-btn" onClick={copyCode}>{t.ed_copy}</button>
             <button type="button" className="ed-btn" onClick={() => download("projects.json", toJson(projects), "application/json")}>
               {t.ed_export}
@@ -160,7 +191,44 @@ export default function ProjectEditor({ projects, setProjects, lang, onClose }: 
           </div>
         </header>
 
-        <p className="ed-note">{t.ed_localNote}</p>
+        <p className="ed-note">{t.ed_publishNote}</p>
+
+        {/* ---- токен для публикации ---- */}
+        <div className="ed-token">
+          {token ? (
+            <div className="ed-token__row">
+              <span className="ed-label">{t.ed_token}</span>
+              <code className="ed-token__mask">{maskToken(token)}</code>
+              <button type="button" className="ed-btn ed-btn--sm ed-btn--danger" onClick={clearToken}>
+                {t.ed_tokenClear}
+              </button>
+              <a className="ed-btn ed-btn--sm" href={actionsUrl()} target="_blank" rel="noopener noreferrer">
+                {t.ed_openActions}
+              </a>
+            </div>
+          ) : (
+            <div className="ed-token__row">
+              <input
+                className="ed-input ed-input--url"
+                type="password"
+                autoComplete="off"
+                placeholder={t.ed_token}
+                value={tokenDraft}
+                onChange={(e) => setTokenDraft(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") saveToken(); }}
+              />
+              <button type="button" className="ed-btn ed-btn--sm ed-btn--solid" onClick={saveToken}>
+                {t.ed_tokenSet}
+              </button>
+            </div>
+          )}
+          {!token && <p className="ed-note ed-note--tight">{t.ed_tokenHint}</p>}
+          {lastCommit && (
+            <p className="ed-note ed-note--tight">
+              <a href={lastCommit} target="_blank" rel="noopener noreferrer">{lastCommit}</a>
+            </p>
+          )}
+        </div>
 
         <div className="ed-body">
 

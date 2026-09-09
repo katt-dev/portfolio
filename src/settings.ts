@@ -30,13 +30,14 @@
 //   ДОБАВИТЬ ПРОЕКТ  = скопировать блок { ... } и вставить перед ] ниже
 //   УДАЛИТЬ ПРОЕКТ   = стереть блок целиком вместе с его запятой
 //
-//   ПРОЩЕ: запусти у себя  npm run dev , открой localhost:5173 и нажми
-//   Ctrl+Shift+E — откроется редактор проектов, где можно добавлять и
-//   удалять проекты и перетаскивать скриншоты мышкой. На самом сайте
-//   этого редактора нет — он работает только у тебя на компьютере.
+//   ПРОЩЕ: открой сайт по секретному адресу (см. ADMIN_SECRET ниже) —
+//   откроется редактор проектов: добавить/удалить проект, перетащить
+//   скриншоты. Браузер запомнит тебя, дальше заходи как обычно.
 //
 // ============================================================================
 
+
+import projectsData from "./projects.json";
 
 // ----------------------------------------------------------------------------
 //  ТИПЫ (НЕ ТРОГАЙ — нужны сайту, чтобы понимать структуру данных)
@@ -94,6 +95,36 @@ export const BADGE:    string = "Game Developer";
 export const PORTRAIT: string = "https://allwebs.ru/images/2026/09/08/a5da47961c2b1621944291e9941d5015.png";
 
 
+// ----------------------------------------------------------------------------
+//  СЕКРЕТНОЕ СЛОВО ДЛЯ ВХОДА В РЕДАКТОР
+//
+//  Заходишь ОДИН РАЗ по адресу:
+//      https://ka1tt.github.io/portfolio/#это-слово
+//
+//  После этого браузер тебя запомнит: в меню-шестерёнке появится кнопка
+//  «Редактор проектов», и будет работать Ctrl+Shift+E. Секрет из адресной
+//  строки стирается сам, в истории браузера не остаётся.
+//
+//  Выйти на этом браузере:  открыть сайт с  #exit
+//
+//  Слово можно поменять на любое своё — без пробелов, латиница и цифры.
+//  Поменял -> нужно снова зайти по новому адресу.
+// ----------------------------------------------------------------------------
+export const ADMIN_SECRET: string = "katt-edit-2026";
+
+
+// ----------------------------------------------------------------------------
+//  КУДА РЕДАКТОР ПУБЛИКУЕТ ПРОЕКТЫ
+//
+//  Кнопка «Опубликовать на сайт» коммитит файл PROJECTS_PATH в этот
+//  репозиторий, после чего GitHub Actions пересобирает сайт.
+//  Менять тут обычно нечего.
+// ----------------------------------------------------------------------------
+export const GITHUB_REPO: string   = "ka1tt/portfolio"; // имя/репозиторий
+export const GITHUB_BRANCH: string = "main";
+export const PROJECTS_PATH: string = "src/projects.json";
+
+
 // ============================================================================
 //  2. ТЕКСТЫ САЙТА — все надписи, что видит посетитель (два языка)
 // ============================================================================
@@ -135,6 +166,7 @@ export const UI = {
     close:       "Закрыть",
     themeAria:   "Сменить тему",
     settingsAria:"Открыть настройки",
+    editorBtn:   "Редактор проектов",
   },
   en: {
     firstName:   "katt",
@@ -172,6 +204,7 @@ export const UI = {
     close:       "Close",
     themeAria:   "Toggle theme",
     settingsAria:"Open settings",
+    editorBtn:   "Project editor",
   },
 };
 
@@ -200,42 +233,14 @@ export const STATUS_ORDER = ["concept", "alpha", "beta", "early", "release"] as 
 // ============================================================================
 //  4. ПРОЕКТЫ
 //
-//     cover     -> ОБЛОЖКА КАРТОЧКИ (видно на главной)
-//     status    -> стадия: "concept" | "alpha" | "beta" | "early" | "release"
-//                  или "" — тогда плашки не будет
-//     images    -> скриншоты, которые листаются в окне
-//     team      -> с кем делался проект
+//   Сами проекты лежат в отдельном файле  src/projects.json .
+//   Его пишет редактор, когда ты нажимаешь «Опубликовать на сайт», поэтому
+//   руками его править обычно не нужно (но можно — это обычный JSON).
+//
+//   Поля те же, что описаны в самом верху файла:
+//     cover   -> обложка карточки
+//     status  -> "concept" | "alpha" | "beta" | "early" | "release" | ""
+//     images  -> скриншоты, team -> команда
 // ============================================================================
 
-export const PROJECTS: Project[] = [
-  {
-    id: "PiWorld",
-    num: "01",
-    year: "2026",
-    engine: "Unity",
-    status: "early",
-    tags: ["Unity · C#", "Adventure", "Survival", "Steam Release"],
-
-    // ▼▼▼ ОБЛОЖКА КАРТОЧКИ — меняй ссылку ниже ▼▼▼
-    cover: "https://allwebs.ru/images/2026/09/08/14f4b94773a872806a5f8385f8abc186.png",
-
-    title:       { ru: "Piworld", en: "Piworld" },
-    subtitle:    { ru: "", en: "" },
-    description: { ru: "", en: "" },
-    myRole:      { ru: "General developer / Главный разработчик", en: "General developer / Lead Developer" },
-
-    // ССЫЛКА НА СТРАНИЦУ ИГРЫ (Steam / itch.io / сайт). Пусто = кнопка скрыта
-    linkUrl:     "https://store.steampowered.com/app/3167710/Piworld/",
-    linkLabel:   { ru: "Страница в Steam", en: "View on Steam" },
-
-    images: [
-      { src: "https://allwebs.ru/images/2026/09/08/005dfe359ce32db63ade00aba6fb64c8.jpg", caption: { ru: "Меню", en: "Menu" } },
-      { src: "https://allwebs.ru/images/2026/09/08/5e773898998094456e2791ddd72859a9.png", caption: { ru: "Страница в магазине", en: "Steam page" } },
-    ],
-    team: [
-      { name: "Kippen",    role: { ru: "General Designer", en: "General Designer" }, avatar: "https://allwebs.ru/images/2026/09/08/395cbb25753439f45f604551eaba35ee.png", email: "" },
-      { name: "Santiago",  role: { ru: "Server Developer", en: "Server Developer" }, avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg", email: "" },
-      { name: "Serkov1ch", role: { ru: "Team Leader",      en: "Team Leader" },      avatar: "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg", email: "" },
-    ],
-  },
-];
+export const PROJECTS: Project[] = projectsData as unknown as Project[];

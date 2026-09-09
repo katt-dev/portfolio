@@ -9,28 +9,21 @@
 //   settings.ts (или добавлено в редакторе) — столько и покажется.
 //   Ширина карточек чередуется по шаблону SPAN_PATTERN ниже.
 //
-//   РЕДАКТОР ПРОЕКТОВ существует только у тебя на компьютере:
-//   запусти  npm run dev  и нажми Ctrl+Shift+E. В версию, которая
-//   выкладывается на сайт, код редактора не попадает вообще.
+//   РЕДАКТОР ПРОЕКТОВ: заходишь один раз по секретному адресу
+//   (ADMIN_SECRET в settings.ts), браузер тебя запоминает — дальше кнопка
+//   в меню-шестерёнке или Ctrl+Shift+E. Подробности в src/adminAccess.ts.
 //
 // ============================================================================
 
-import { useEffect, useState, useCallback, useRef, lazy, Suspense } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   NAME, EMAIL, DISCORD, BADGE, PORTRAIT,
   UI, STATUS,
   type Lang, type UiText, type Project,
 } from "./settings";
 import { loadProjects } from "./projectsStore";
-
-// Редактор проектов подгружается ТОЛЬКО при локальном запуске (npm run dev).
-// В сборке для сайта import.meta.env.DEV === false, ветка становится мёртвым
-// кодом, и Vite вырезает и её, и весь код редактора из итогового файла.
-// То есть на GitHub Pages редактора не существует вообще — не только кнопки,
-// а самого кода. Найти или открыть его снаружи невозможно.
-const ProjectEditor = import.meta.env.DEV
-  ? lazy(() => import("./admin/ProjectEditor"))
-  : null;
+import { checkAccessFromUrl } from "./adminAccess";
+import ProjectEditor from "./admin/ProjectEditor";
 
 // Ширина карточек на главной, по кругу:
 //   pg-span4 = широкий блок   pg-span3 = средний   pg-span2 = узкий
@@ -57,7 +50,7 @@ export default function App() {
   const [active, setActive] = useState<Project | null>(null);
   const [slide, setSlide] = useState(0);
 
-  const { editorOpen, setEditorOpen } = useAdmin();
+  const { isAdmin, editorOpen, setEditorOpen } = useAdmin();
 
   const copy: UiText = UI[lang];
 
@@ -198,6 +191,18 @@ export default function App() {
                     <button type="button" className={`lang-btn${lang === "en" ? " is-on" : ""}`} onClick={() => setLang("en")}>EN · Eng</button>
                   </div>
                   <p className="settings-panel__hint">{copy.langHint}</p>
+
+                  {/* Кнопка редактора — появляется только после того,
+                      как ты зашёл по секретному адресу (см. adminAccess.ts) */}
+                  {isAdmin && (
+                    <>
+                      <div className="rule" style={{ margin: "14px 0 12px" }} />
+                      <button type="button" className="lang-btn is-on" style={{ width: "100%" }}
+                        onClick={() => { setEditorOpen(true); setSettingsOpen(false); }}>
+                        {copy.editorBtn}
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -432,16 +437,14 @@ export default function App() {
         </div>
       )}
 
-      {/* ====== РЕДАКТОР ПРОЕКТОВ (только при npm run dev) ====== */}
-      {ProjectEditor && editorOpen && (
-        <Suspense fallback={null}>
-          <ProjectEditor
-            projects={projects}
-            setProjects={setProjects}
-            lang={lang}
-            onClose={() => setEditorOpen(false)}
-          />
-        </Suspense>
+      {/* ====== РЕДАКТОР ПРОЕКТОВ (только когда тебя узнали) ====== */}
+      {isAdmin && editorOpen && (
+        <ProjectEditor
+          projects={projects}
+          setProjects={setProjects}
+          lang={lang}
+          onClose={() => setEditorOpen(false)}
+        />
       )}
     </div>
   );
@@ -450,18 +453,17 @@ export default function App() {
 // ---------------------------------------------------------------------------
 //  Доступ к редактору.
 //
-//  Редактор доступен ТОЛЬКО при локальном запуске у тебя на компьютере:
-//      npm run dev      ->  http://localhost:5173
+//  Первый раз — зайти по адресу сайта с  #секрет  (ADMIN_SECRET в settings.ts).
+//  Дальше браузер помнит тебя: кнопка в меню-шестерёнке или Ctrl+Shift+E.
+//  Выйти — открыть сайт с  #exit .
 //
-//  Открыть/закрыть — Ctrl+Shift+E или кнопка в меню-шестерёнке.
-//
-//  На опубликованном сайте isAdmin всегда false, а сам код редактора в сборку
-//  не попадает. Поэтому посторонний не может ни открыть его, ни узнать о нём:
-//  подбирать адрес или горячую клавишу бесполезно, там этого кода нет.
+//  Вся проверка живёт в src/adminAccess.ts.
 // ---------------------------------------------------------------------------
 function useAdmin() {
-  const isAdmin: boolean = import.meta.env.DEV;
-  const [editorOpen, setEditorOpen] = useState(false);
+  // Проверяем адрес один раз при загрузке страницы.
+  const [access] = useState(() => checkAccessFromUrl());
+  const [isAdmin, setIsAdmin] = useState(access.unlocked);
+  const [editorOpen, setEditorOpen] = useState(access.openEditor);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -475,5 +477,18 @@ function useAdmin() {
     return () => window.removeEventListener("keydown", onKey);
   }, [isAdmin]);
 
-  return { editorOpen, setEditorOpen };
+  // Если секретный адрес открыт в уже загруженной вкладке — реагируем сразу,
+  // без перезагрузки. Из-за этого «сработало один раз и перестало» не повторится.
+  useEffect(() => {
+    const onHash = () => {
+      const res = checkAccessFromUrl();
+      setIsAdmin(res.unlocked);
+      if (res.openEditor) setEditorOpen(true);
+      if (!res.unlocked) setEditorOpen(false);
+    };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+
+  return { isAdmin, editorOpen, setEditorOpen };
 }

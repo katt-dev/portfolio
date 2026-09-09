@@ -173,3 +173,26 @@
   color: var(--bg); background: var(--text);
   border-radius: 2px; box-shadow: var(--shadow-sm);
 }
+
+/* --- публикация на сайт --- */
+.ed-btn--publish {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+  font-weight: 500;
+}
+.ed-btn--publish:hover:not(:disabled) { filter: brightness(1.1); }
+.ed-btn:disabled { opacity: 0.45; cursor: default; }
+
+.ed-token {
+  display: flex; flex-direction: column; gap: 8px;
+  border: 1px solid var(--line-strong); background: var(--surface);
+  padding: 12px; margin-bottom: 18px;
+}
+.ed-token__row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ed-token__row .ed-input { flex: 1; min-width: 220px; }
+.ed-token__mask {
+  font-family: "JetBrains Mono", monospace; font-size: 12px;
+  padding: 4px 8px; background: var(--surface-2);
+  border: 1px solid var(--line-strong); border-radius: 2px;
+}
+.ed-note--tight { margin: 0; font-size: 12px; }
+.ed-note--tight a { color: var(--accent); word-break: break-all; }
