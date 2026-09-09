@@ -535,11 +535,23 @@ body::after {
   content: ""; width: 6px; height: 6px; border-radius: 999px;
   background: currentColor; flex-shrink: 0;
 }
-.status-chip--concept { color: #8a7cf0; }
-.status-chip--alpha   { color: #d2762a; }
-.status-chip--beta    { color: #2f8fbf; }
-.status-chip--early   { color: #2e9c6d; }
-.status-chip--release { color: var(--accent); }
+/* Цвет каждой стадии. Добавил стадию в STATUS (settings.ts) —
+   допиши сюда строку с её ключом, иначе плашка будет серой. */
+.status-chip--idea      { color: #7c8aa5; }
+.status-chip--prototype { color: #8a7cf0; }
+.status-chip--concept   { color: #4a7fe0; }
+.status-chip--alpha     { color: #d2762a; }
+.status-chip--beta      { color: #2f8fbf; }
+.status-chip--playtest  { color: #a86fd0; }
+.status-chip--demo      { color: #5f9e2f; }
+.status-chip--itch      { color: #d6456b; }
+.status-chip--steamSoon { color: #5b8ec4; }
+.status-chip--wishlist  { color: #d99b1c; }
+.status-chip--early     { color: #2e9c6d; }
+.status-chip--release   { color: var(--accent); }
+.status-chip--updating  { color: #23a094; }
+.status-chip--paused    { color: #8a8577; }
+.status-chip--cancelled { color: #9a5252; }
 
 .project-card__status {
   position: absolute; left: 12px; bottom: 12px;

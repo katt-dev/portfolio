@@ -60,10 +60,12 @@ export interface TeamMember {
   email?: string;   // пусто "" или нет поля -> кнопка «написать» скрыта
 }
 
-// Стадия проекта. Допустимые значения — ключи из STATUS (блок 3):
-//   "concept" | "alpha" | "beta" | "early" | "release"
+// Стадия проекта. Сам список стадий — в блоке 3 ниже (STATUS).
+// Тип берётся оттуда автоматически: добавил строку в STATUS — стадия сразу
+// доступна и в проектах, и в выпадающем списке редактора.
 // Пусто "" -> плашка со стадией не показывается.
-export type ProjectStatus = "" | "concept" | "alpha" | "beta" | "early" | "release";
+export type StatusKey = keyof typeof STATUS;
+export type ProjectStatus = "" | StatusKey;
 
 // Как показывать обложку и скриншоты проекта:
 //   "auto"   — картинка видна ЦЕЛИКОМ, ничего не обрезается, высота
@@ -157,16 +159,26 @@ export type UiText = (typeof UI)["ru"];
 //     у проекта. Меняй только текст в кавычках.
 // ============================================================================
 
-export const STATUS: Record<Exclude<ProjectStatus, "">, TextPair> = {
-  concept: { ru: "В разработке",  en: "In development" },
-  alpha:   { ru: "Альфа-тест",    en: "Alpha test" },
-  beta:    { ru: "Бета-тест",     en: "Beta test" },
-  early:   { ru: "Ранний доступ", en: "Early access" },
-  release: { ru: "Релиз",         en: "Released" },
-};
+export const STATUS = {
+  idea:      { ru: "Идея",                  en: "Idea" },
+  prototype: { ru: "Прототип",              en: "Prototype" },
+  concept:   { ru: "В разработке",          en: "In development" },
+  alpha:     { ru: "Альфа-тест",            en: "Alpha test" },
+  beta:      { ru: "Бета-тест",             en: "Beta test" },
+  playtest:  { ru: "Открытый плейтест",     en: "Open playtest" },
+  demo:      { ru: "Доступна демоверсия",   en: "Demo available" },
+  itch:      { ru: "Сейчас на itch.io",     en: "Now on itch.io" },
+  steamSoon: { ru: "Скоро в Steam",         en: "Coming to Steam" },
+  wishlist:  { ru: "Добавь в желаемое",     en: "Wishlist on Steam" },
+  early:     { ru: "Ранний доступ",         en: "Early access" },
+  release:   { ru: "Релиз",                 en: "Released" },
+  updating:  { ru: "Регулярно обновляется", en: "Actively updated" },
+  paused:    { ru: "На паузе",              en: "On hold" },
+  cancelled: { ru: "Закрыт",                en: "Cancelled" },
+} satisfies Record<string, TextPair>;
 
-// Порядок стадий в выпадающем списке редактора
-export const STATUS_ORDER = ["concept", "alpha", "beta", "early", "release"] as const;
+// Порядок в выпадающем списке = порядок строк в STATUS выше.
+export const STATUS_ORDER = Object.keys(STATUS) as StatusKey[];
 
 
 // ============================================================================
