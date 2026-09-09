@@ -15,15 +15,21 @@
 import { useEffect, useRef, useState } from "react";
 import {
   STATUS, STATUS_ORDER,
-  type Lang, type Project, type ProjectStatus, type TextPair,
+  CONTENT_PATH, PROJECTS_PATH,
+  type ImageFit, type Lang, type Project, type ProjectStatus, type TextPair,
 } from "../settings";
 import {
   clearProjects, defaultProjects, download, imageFileToDataUrl,
   imagesFromTransfer, makeEmptyProject, saveProjects, toJson, toSettingsCode,
 } from "../projectsStore";
+import {
+  FIELD_LABELS, contentToJson, defaultContent, clearContent, saveContent,
+  type SiteContent, type UiBlock,
+} from "../contentStore";
 import ImageDrop from "./ImageDrop";
+import ProjectModal from "../ProjectModal";
 import { ED } from "./editorTexts";
-import { actionsUrl, getToken, maskToken, publishProjects, setToken } from "./publish";
+import { actionsUrl, getToken, maskToken, publishFiles, setToken } from "./publish";
 import "./editor.css";
 
 // ---------------------------------------------------------------------------
@@ -59,11 +65,13 @@ function Pair({ label, value, onChange, area }: {
 interface Props {
   projects: Project[];
   setProjects: (p: Project[]) => void;
+  content: SiteContent;
+  setContent: (c: SiteContent) => void;
   lang: Lang;
   onClose: () => void;
 }
 
-export default function ProjectEditor({ projects, setProjects, lang, onClose }: Props) {
+export default function ProjectEditor({ projects, setProjects, content, setContent, lang, onClose }: Props) {
   // Тексты редактора живут в editorTexts.ts (см. комментарий в том файле).
   const t = ED[lang];
   const [selected, setSelected] = useState(0);
@@ -72,6 +80,8 @@ export default function ProjectEditor({ projects, setProjects, lang, onClose }: 
   const [tokenDraft, setTokenDraft] = useState("");
   const [publishing, setPublishing] = useState(false);
   const [lastCommit, setLastCommit] = useState("");
+  const [preview, setPreview] = useState(false);
+  const [tab, setTab] = useState<"projects" | "site">("projects");
   const toastTimer = useRef<number | undefined>(undefined);
 
   const flash = (msg: string) => {
@@ -125,8 +135,9 @@ export default function ProjectEditor({ projects, setProjects, lang, onClose }: 
   const resetAll = () => {
     if (!window.confirm(t.ed_confirmRes)) return;
     clearProjects();
-    const base = defaultProjects();
-    setProjects(base);
+    clearContent();
+    setProjects(defaultProjects());
+    setContent(defaultContent());
     setSelected(0);
     flash(t.ed_reset);
   };
@@ -141,10 +152,26 @@ export default function ProjectEditor({ projects, setProjects, lang, onClose }: 
     }
   };
 
+  const commitContent = (next: SiteContent) => {
+    setContent(next);
+    saveContent(next);
+  };
+
+  /** Правка одного поля текстов на одном языке. */
+  const patchUi = (l: Lang, key: string, value: string | string[]) => {
+    commitContent({
+      ...content,
+      ui: { ...content.ui, [l]: { ...content.ui[l], [key]: value } as UiBlock },
+    });
+  };
+
   const publish = async () => {
     setPublishing(true);
     setLastCommit("");
-    const res = await publishProjects(toJson(projects), token, lang);
+    const res = await publishFiles([
+      { path: PROJECTS_PATH, content: toJson(projects) + "\n" },
+      { path: CONTENT_PATH, content: contentToJson(content) },
+    ], token, lang);
     setPublishing(false);
     if (res.commitUrl) setLastCommit(res.commitUrl);
     flash(res.message);
@@ -187,6 +214,9 @@ export default function ProjectEditor({ projects, setProjects, lang, onClose }: 
               {t.ed_export}
             </button>
             <button type="button" className="ed-btn ed-btn--danger" onClick={resetAll}>{t.ed_reset}</button>
+            <button type="button" className="ed-btn" onClick={() => setPreview(true)} disabled={!current}>
+              {t.ed_preview}
+            </button>
             <button type="button" className="ed-btn ed-btn--solid" onClick={onClose}>{t.ed_lock}</button>
           </div>
         </header>
@@ -230,7 +260,75 @@ export default function ProjectEditor({ projects, setProjects, lang, onClose }: 
           )}
         </div>
 
-        <div className="ed-body">
+        <div className="ed-tabs">
+          <button type="button" className={`ed-tab${tab === "projects" ? " is-on" : ""}`}
+            onClick={() => setTab("projects")}>{t.ed_tabProjects}</button>
+          <button type="button" className={`ed-tab${tab === "site" ? " is-on" : ""}`}
+            onClick={() => setTab("site")}>{t.ed_tabSite}</button>
+        </div>
+
+        {tab === "site" && (
+          <section className="ed-form">
+            <h3 className="ed-section">{t.ed_siteTitle}</h3>
+            <div className="ed-row2">
+              <Text label={t.ed_f_siteName} value={content.name}
+                onChange={(name) => commitContent({ ...content, name })} />
+              <Text label={t.ed_f_siteEmail} value={content.email}
+                onChange={(email) => commitContent({ ...content, email })} />
+            </div>
+            <Text label={t.ed_f_badge} value={content.badge}
+              onChange={(badge) => commitContent({ ...content, badge })} />
+            <Text label={t.ed_f_discord} value={content.discord} area
+              onChange={(discord) => commitContent({ ...content, discord })} />
+            <ImageDrop
+              label={t.ed_f_portrait}
+              value={content.portrait}
+              onChange={(portrait) => commitContent({ ...content, portrait })}
+              hint={t.ed_dropHint}
+              pickLabel={t.ed_pickFile}
+              urlLabel={t.ed_f_src}
+              clearLabel={t.ed_remove}
+            />
+
+            {/* Все надписи сайта. Порядок берём из content.json. */}
+            {Object.keys(content.ui.ru).map((key) => {
+              const label = FIELD_LABELS[key]?.[lang] ?? key;
+              const ruVal = (content.ui.ru as Record<string, unknown>)[key];
+              const enVal = (content.ui.en as Record<string, unknown>)[key];
+
+              // «Обо мне» — список абзацев, редактируем построчно
+              if (Array.isArray(ruVal)) {
+                return (
+                  <div className="ed-field" key={key}>
+                    <span className="ed-label">{label}</span>
+                    <div className="ed-pair">
+                      <Text label="RU" area value={(ruVal as string[]).join("\n")}
+                        onChange={(v) => patchUi("ru", key, v.split("\n"))} />
+                      <Text label="EN" area value={(enVal as string[]).join("\n")}
+                        onChange={(v) => patchUi("en", key, v.split("\n"))} />
+                    </div>
+                    <span className="ed-hint">{t.ed_aboutHint}</span>
+                  </div>
+                );
+              }
+
+              const long = String(ruVal).length > 60;
+              return (
+                <div className="ed-field" key={key}>
+                  <span className="ed-label">{label}</span>
+                  <div className="ed-pair">
+                    <Text label="RU" area={long} value={String(ruVal)}
+                      onChange={(v) => patchUi("ru", key, v)} />
+                    <Text label="EN" area={long} value={String(enVal)}
+                      onChange={(v) => patchUi("en", key, v)} />
+                  </div>
+                </div>
+              );
+            })}
+          </section>
+        )}
+
+        <div className="ed-body" hidden={tab !== "projects"}>
 
           {/* ---- список проектов ---- */}
           <aside className="ed-list">
@@ -291,6 +389,19 @@ export default function ProjectEditor({ projects, setProjects, lang, onClose }: 
                       <option key={k} value={k}>{STATUS[k][lang]}</option>
                     ))}
                   </select>
+                </label>
+
+                <label className="ed-field">
+                  <span className="ed-label">{t.ed_f_fit}</span>
+                  <select
+                    className="ed-input"
+                    value={current.imageFit}
+                    onChange={(e) => patch({ imageFit: e.target.value as ImageFit })}
+                  >
+                    <option value="auto">{t.ed_fitAuto}</option>
+                    <option value="custom">{t.ed_fitCustom}</option>
+                  </select>
+                  <span className="ed-hint">{t.ed_fitHint}</span>
                 </label>
 
                 <Text
@@ -407,6 +518,18 @@ export default function ProjectEditor({ projects, setProjects, lang, onClose }: 
 
         {toast && <div className="ed-toast">{toast}</div>}
       </div>
+
+      {/* Превью — тот же самый компонент, что и на сайте, поэтому
+          показывает ровно то, что увидят посетители. */}
+      {preview && current && (
+        <ProjectModal
+          project={current}
+          lang={lang}
+          copy={content.ui[lang]}
+          email={content.email}
+          onClose={() => setPreview(false)}
+        />
+      )}
     </div>
   );
 }

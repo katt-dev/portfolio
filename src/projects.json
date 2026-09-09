@@ -5,22 +5,79 @@
     "year": "2026",
     "engine": "Unity",
     "status": "early",
-    "tags": ["Unity · C#", "Adventure", "Survival", "Steam Release"],
+    "imageFit": "auto",
+    "tags": [
+      "Unity · C#",
+      "Adventure",
+      "Survival",
+      "Steam Release"
+    ],
     "cover": "https://allwebs.ru/images/2026/09/08/14f4b94773a872806a5f8385f8abc186.png",
-    "title": { "ru": "Piworld", "en": "Piworld" },
-    "subtitle": { "ru": "", "en": "" },
-    "description": { "ru": "", "en": "" },
-    "myRole": { "ru": "General developer / Главный разработчик", "en": "General developer / Lead Developer" },
+    "title": {
+      "ru": "Piworld",
+      "en": "Piworld"
+    },
+    "subtitle": {
+      "ru": "",
+      "en": ""
+    },
+    "description": {
+      "ru": "",
+      "en": ""
+    },
+    "myRole": {
+      "ru": "General developer / Главный разработчик",
+      "en": "General developer / Lead Developer"
+    },
     "linkUrl": "https://store.steampowered.com/app/3167710/Piworld/",
-    "linkLabel": { "ru": "Страница в Steam", "en": "View on Steam" },
+    "linkLabel": {
+      "ru": "Страница в Steam",
+      "en": "View on Steam"
+    },
     "images": [
-      { "src": "https://allwebs.ru/images/2026/09/08/005dfe359ce32db63ade00aba6fb64c8.jpg", "caption": { "ru": "Меню", "en": "Menu" } },
-      { "src": "https://allwebs.ru/images/2026/09/08/5e773898998094456e2791ddd72859a9.png", "caption": { "ru": "Страница в магазине", "en": "Steam page" } }
+      {
+        "src": "https://allwebs.ru/images/2026/09/08/005dfe359ce32db63ade00aba6fb64c8.jpg",
+        "caption": {
+          "ru": "Меню",
+          "en": "Menu"
+        }
+      },
+      {
+        "src": "https://allwebs.ru/images/2026/09/08/5e773898998094456e2791ddd72859a9.png",
+        "caption": {
+          "ru": "Страница в магазине",
+          "en": "Steam page"
+        }
+      }
     ],
     "team": [
-      { "name": "Kippen", "role": { "ru": "General Designer", "en": "General Designer" }, "avatar": "https://allwebs.ru/images/2026/09/08/395cbb25753439f45f604551eaba35ee.png", "email": "" },
-      { "name": "Santiago", "role": { "ru": "Server Developer", "en": "Server Developer" }, "avatar": "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg", "email": "" },
-      { "name": "Serkov1ch", "role": { "ru": "Team Leader", "en": "Team Leader" }, "avatar": "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg", "email": "" }
+      {
+        "name": "Kippen",
+        "role": {
+          "ru": "General Designer",
+          "en": "General Designer"
+        },
+        "avatar": "https://allwebs.ru/images/2026/09/08/395cbb25753439f45f604551eaba35ee.png",
+        "email": ""
+      },
+      {
+        "name": "Santiago",
+        "role": {
+          "ru": "Server Developer",
+          "en": "Server Developer"
+        },
+        "avatar": "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg",
+        "email": ""
+      },
+      {
+        "name": "Serkov1ch",
+        "role": {
+          "ru": "Team Leader",
+          "en": "Team Leader"
+        },
+        "avatar": "https://allwebs.ru/images/2026/09/09/d25b1ccf4de2dfd0dd9ad8721174166b.jpg",
+        "email": ""
+      }
     ]
   }
 ]

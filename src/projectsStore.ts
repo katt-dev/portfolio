@@ -14,7 +14,8 @@
 
 import {
   PROJECTS, STATUS_ORDER,
-  type Project, type ProjectImage, type ProjectStatus, type TeamMember, type TextPair,
+  type ImageFit, type Project, type ProjectImage, type ProjectStatus,
+  type TeamMember, type TextPair,
 } from "./settings";
 import { isAdminUnlocked } from "./adminAccess";
 
@@ -35,6 +36,8 @@ const pair = (v: unknown): TextPair => {
 const status = (v: unknown): ProjectStatus =>
   (STATUS_ORDER as readonly string[]).includes(str(v)) ? (v as ProjectStatus) : "";
 
+const fit = (v: unknown): ImageFit => (str(v) === "custom" ? "custom" : "auto");
+
 const image = (v: unknown): ProjectImage => {
   const o = (v ?? {}) as Partial<ProjectImage>;
   return { src: str(o.src), caption: pair(o.caption) };
@@ -53,6 +56,7 @@ export function normalizeProject(v: unknown): Project {
     year: str(o.year),
     engine: str(o.engine),
     status: status(o.status),
+    imageFit: fit(o.imageFit),
     tags: Array.isArray(o.tags) ? o.tags.filter((t): t is string => typeof t === "string") : [],
     cover: str(o.cover),
     title: pair(o.title),
@@ -113,6 +117,7 @@ export function makeEmptyProject(index: number, title: string): Project {
     year: String(new Date().getFullYear()),
     engine: "",
     status: "concept",
+    imageFit: "auto",
     tags: [],
     cover: "",
     title: { ru: title, en: title },
@@ -141,6 +146,7 @@ export function toSettingsCode(projects: Project[]): string {
     year: ${q(x.year)},
     engine: ${q(x.engine)},
     status: ${q(x.status)},
+    imageFit: ${q(x.imageFit)},
     tags: [${x.tags.map(q).join(", ")}],
     cover: ${q(x.cover)},
     title:       ${p(x.title)},

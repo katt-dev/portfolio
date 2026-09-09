@@ -15,14 +15,12 @@
 //
 // ============================================================================
 
-import { useEffect, useState, useCallback, useRef } from "react";
-import {
-  NAME, EMAIL, DISCORD, BADGE, PORTRAIT,
-  UI, STATUS,
-  type Lang, type UiText, type Project,
-} from "./settings";
+import { useEffect, useState, useRef } from "react";
+import { STATUS, type Lang, type Project } from "./settings";
+import { loadContent, type SiteContent } from "./contentStore";
 import { loadProjects } from "./projectsStore";
 import { checkAccessFromUrl } from "./adminAccess";
+import ProjectModal from "./ProjectModal";
 import ProjectEditor from "./admin/ProjectEditor";
 
 // Ширина карточек на главной, по кругу:
@@ -47,12 +45,13 @@ export default function App() {
   const settingsRef = useRef<HTMLDivElement>(null);
 
   const [projects, setProjects] = useState<Project[]>(() => loadProjects());
+  // Тексты сайта: у посетителя — из content.json, у тебя — твой черновик.
+  const [content, setContent] = useState<SiteContent>(() => loadContent());
   const [active, setActive] = useState<Project | null>(null);
-  const [slide, setSlide] = useState(0);
 
   const { isAdmin, editorOpen, setEditorOpen } = useAdmin();
 
-  const copy: UiText = UI[lang];
+  const copy = content.ui[lang];
 
   // ---------- сайд-эффекты ----------
   useEffect(() => {
@@ -64,35 +63,19 @@ export default function App() {
     document.documentElement.lang = lang;
     localStorage.setItem("lang", lang);
     // Название вкладки браузера — меняется вместе с языком (см. tabTitle в settings.ts)
-    document.title = UI[lang].tabTitle;
-  }, [lang]);
+    document.title = copy.tabTitle;
+  }, [lang, copy.tabTitle]);
 
-  const open = (p: Project) => { setActive(p); setSlide(0); setSettingsOpen(false); };
+  const open = (p: Project) => { setActive(p); setSettingsOpen(false); };
   const close = () => setActive(null);
-
-  const prev = useCallback(() => {
-    if (!active) return;
-    setSlide((s) => (s === 0 ? active.images.length - 1 : s - 1));
-  }, [active]);
-  const next = useCallback(() => {
-    if (!active) return;
-    setSlide((s) => (s === active.images.length - 1 ? 0 : s + 1));
-  }, [active]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        if (active) close();
-        else setSettingsOpen(false);
-      }
-      if (active) {
-        if (e.key === "ArrowLeft") prev();
-        if (e.key === "ArrowRight") next();
-      }
+      if (e.key === "Escape" && !active) setSettingsOpen(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [active, prev, next]);
+  }, [active]);
 
   useEffect(() => {
     document.body.style.overflow = active || editorOpen ? "hidden" : "";
@@ -121,7 +104,7 @@ export default function App() {
   // ---------- карточка проекта ----------
   const Card = ({ p, i }: { p: Project; i: number }) => (
     <button type="button" className="project-card" onClick={() => open(p)} style={{ animationDelay: `${0.07 * i}s` }} aria-label={`${copy.featured}: ${p.title[lang]}`}>
-      <div className="project-card__cover">
+      <div className={`project-card__cover project-card__cover--${p.imageFit}`}>
         <img className="project-card__img" src={p.cover} alt={p.subtitle[lang]} loading="lazy" />
         <span className="project-card__badge project-card__badge--year">{p.year}</span>
         <span className="project-card__badge project-card__badge--engine">{p.engine}</span>
@@ -147,11 +130,6 @@ export default function App() {
       </div>
     </button>
   );
-
-  const mailSubject = (title: string) =>
-    lang === "ru"
-      ? `Проект «${title}» — вопрос через сайт`
-      : `Project “${title}” — message from the site`;
 
   return (
     <div style={{ minHeight: "100vh" }}>
@@ -224,7 +202,7 @@ export default function App() {
         {/* ====== ГЕРОЙ ====== */}
         <section style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 24px 40px" }} className="hero-grid">
           <div>
-            <span className="mono" style={{ color: "var(--text-muted)" }}>{BADGE}</span>
+            <span className="mono" style={{ color: "var(--text-muted)" }}>{content.badge}</span>
             <h1 className="display" style={{ fontSize: "clamp(48px, 9vw, 110px)", margin: "16px 0 0" }}>
               {copy.firstName}<br />{copy.lastName}
             </h1>
@@ -234,13 +212,13 @@ export default function App() {
                 {copy.viewWork}
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
               </a>
-              {/* Кнопка «написать» — только если EMAIL заполнен в settings.ts */}
-              {EMAIL && <a href={`mailto:${EMAIL}`} className="contact-btn contact-btn--ghost">{copy.writeMe}</a>}
+              {/* Кнопка «написать» — только если почта заполнена (вкладка «Сайт») */}
+              {content.email && <a href={`mailto:${content.email}`} className="contact-btn contact-btn--ghost">{copy.writeMe}</a>}
             </div>
           </div>
           <div style={{ position: "relative" }}>
             <div style={{ position: "relative", border: "1px solid var(--text)", boxShadow: "8px 8px 0 var(--text)", overflow: "hidden", aspectRatio: "4/5" }}>
-              <img src={PORTRAIT} alt={NAME} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", filter: "grayscale(1) contrast(1.05)" }} />
+              <img src={content.portrait} alt={content.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", filter: "grayscale(1) contrast(1.05)" }} />
               <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "14px 16px", background: "linear-gradient(transparent, #000a)", color: "#fff" }}>
                 <span className="mono">{copy.location}</span>
               </div>
@@ -287,20 +265,20 @@ export default function App() {
           <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 56px)", margin: 0 }}>{copy.contactTitle}</h2>
           <span className="mono" style={{ color: "var(--text-muted)", display: "block", marginTop: 12 }}>{copy.contactMe}</span>
 
-          {/* Почта — только если EMAIL заполнен */}
-          {EMAIL && (
+          {/* Почта — только если она заполнена */}
+          {content.email && (
             <a
-              href={`mailto:${EMAIL}`}
+              href={`mailto:${content.email}`}
               className="display"
               style={{ display: "block", fontSize: "clamp(28px, 6vw, 72px)", textDecoration: "none", color: "var(--text)", marginTop: 16, transition: "color 0.3s" }}
               onMouseEnter={(e) => { e.currentTarget.style.color = "var(--accent)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text)"; }}
             >
-              {EMAIL}
+              {content.email}
             </a>
           )}
 
-          {DISCORD && <p style={{ color: "var(--text-muted)", marginTop: 16, whiteSpace: "pre-line" }} className="mono">{DISCORD}</p>}
+          {content.discord && <p style={{ color: "var(--text-muted)", marginTop: 16, whiteSpace: "pre-line" }} className="mono">{content.discord}</p>}
           <p style={{ color: "var(--text-soft)", fontSize: 17, marginTop: 20, maxWidth: "50ch" }}>{copy.contactNote}</p>
         </section>
       </main>
@@ -308,133 +286,14 @@ export default function App() {
       {/* ====== ФУТЕР ====== */}
       <footer style={{ borderTop: "1px solid var(--line-strong)" }}>
         <div style={{ maxWidth: 1280, margin: "0 auto", padding: "24px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-          <span className="mono" style={{ color: "var(--text-muted)" }}>© {new Date().getFullYear()} {NAME}</span>
+          <span className="mono" style={{ color: "var(--text-muted)" }}>© {new Date().getFullYear()} {content.name}</span>
           <span className="mono" style={{ color: "var(--text-muted)" }}>{copy.handmade}</span>
         </div>
       </footer>
 
       {/* ====== МОДАЛЬНОЕ ОКНО ====== */}
       {active && (
-        <div className="modal-overlay" onClick={close} role="dialog" aria-modal="true">
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <button type="button" className="modal__close" onClick={close} aria-label={copy.close}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
-            </button>
-
-            <div className="modal__inner">
-              <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-                <div className="carousel">
-                  <div className="carousel__track" style={{ transform: `translateX(${-slide * 100}%)` }}>
-                    {active.images.map((img, i) => (
-                      <div className="carousel__slide" key={i}>
-                        <img className="carousel__img" src={img.src} alt={img.caption[lang]} />
-                        {img.caption[lang] && <span className="carousel__caption">{img.caption[lang]}</span>}
-                      </div>
-                    ))}
-                  </div>
-                  {active.images.length > 1 && (<>
-                    <button type="button" className="carousel__nav carousel__nav--prev" onClick={prev} aria-label="←">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-                    </button>
-                    <button type="button" className="carousel__nav carousel__nav--next" onClick={next} aria-label="→">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-                    </button>
-                    <div className="carousel__dots">
-                      {active.images.map((_, i) => (
-                        <button key={i} type="button" className={`carousel__dot${i === slide ? " carousel__dot--active" : ""}`} onClick={() => setSlide(i)} />
-                      ))}
-                    </div>
-                  </>)}
-                </div>
-                {active.images.length > 1 && (
-                  <div className="carousel__thumbs">
-                    {active.images.map((img, i) => (
-                      <img key={i} src={img.src} alt="" className={`carousel__thumb${i === slide ? " carousel__thumb--active" : ""}`} onClick={() => setSlide(i)} />
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="modal__info">
-                <div>
-                  <span className="project-card__num">GAME / {active.num} · {active.year} · {active.engine}</span>
-                  <h2 className="display" style={{ fontSize: "clamp(30px, 4vw, 46px)", margin: "8px 0 6px" }}>{active.title[lang]}</h2>
-                  {active.subtitle[lang] && <p style={{ color: "var(--text-soft)", fontSize: 16, margin: 0 }}>{active.subtitle[lang]}</p>}
-                </div>
-
-                {/* Стадия проекта — только если указана */}
-                {active.status && (
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                    <span className="project-card__num">{copy.statusLabel}</span>
-                    <span className={`status-chip status-chip--${active.status}`}>{STATUS[active.status][lang]}</span>
-                  </div>
-                )}
-
-                <div className="rule" />
-                {active.description[lang] && (
-                  <p style={{ fontSize: 15, lineHeight: 1.7, color: "var(--text-soft)", margin: 0 }}>{active.description[lang]}</p>
-                )}
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {active.tags.map((tag) => <span key={tag} className="tag">{tag}</span>)}
-                </div>
-
-                {/* Команда — показываем блок, только если кто-то есть */}
-                {active.team.length > 0 && (<>
-                  <div className="rule" />
-                  <div>
-                    <span className="project-card__num">{copy.teamLabel}</span>
-                    <div style={{ marginTop: 10 }}>
-                      {active.team.map((c) => (
-                        <div className="collab" key={c.name}>
-                          {/* Нет аватарки — просто не показываем её */}
-                          {c.avatar && <img className="collab__avatar" src={c.avatar} alt={c.name} loading="lazy" />}
-                          <div>
-                            <div className="collab__name">{c.name}</div>
-                            <div className="collab__role">{c.role[lang]}</div>
-                          </div>
-                          {/* Почта не указана — кнопки нет */}
-                          {c.email && (
-                            <a
-                              className="collab__mail"
-                              href={`mailto:${c.email}?subject=${encodeURIComponent(mailSubject(active.title[lang]))}`}
-                              title={copy.mailBtn}
-                              aria-label={`${copy.mailBtn}: ${c.name}`}
-                            >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 8l-10 6L2 8"/></svg>
-                            </a>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </>)}
-
-                <div className="rule" />
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 13 }}>
-                  <span className="project-card__num">{copy.roleLabel}</span>
-                  <span style={{ fontWeight: 500 }}>{active.myRole[lang]}</span>
-                </div>
-
-                {/* Кнопка со ссылкой на игру / страницу в Steam.
-                    Показывается только если в settings.ts заполнено linkUrl */}
-                {active.linkUrl && (
-                  <a className="contact-btn contact-btn--link" href={active.linkUrl} target="_blank" rel="noopener noreferrer">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>
-                    {active.linkLabel[lang]}
-                  </a>
-                )}
-
-                {/* «Написать руководителю» — только если почта заполнена */}
-                {EMAIL && (
-                  <a className="contact-btn" href={`mailto:${EMAIL}?subject=${encodeURIComponent(mailSubject(active.title[lang]))}`}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 8l-10 6L2 8"/></svg>
-                    {copy.mailBtn}
-                  </a>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+        <ProjectModal project={active} lang={lang} copy={copy} email={content.email} onClose={close} />
       )}
 
       {/* ====== РЕДАКТОР ПРОЕКТОВ (только когда тебя узнали) ====== */}
@@ -442,6 +301,8 @@ export default function App() {
         <ProjectEditor
           projects={projects}
           setProjects={setProjects}
+          content={content}
+          setContent={setContent}
           lang={lang}
           onClose={() => setEditorOpen(false)}
         />

@@ -196,3 +196,23 @@
 }
 .ed-note--tight { margin: 0; font-size: 12px; }
 .ed-note--tight a { color: var(--accent); word-break: break-all; }
+
+.ed-hint {
+  font-size: 11px; line-height: 1.5; color: var(--text-muted);
+}
+
+/* --- вкладки редактора --- */
+.ed-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+.ed-tab {
+  padding: 8px 16px; font: inherit; font-size: 13px; cursor: pointer;
+  color: var(--text-muted); background: var(--surface);
+  border: 1px solid var(--line-strong); border-radius: 2px;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+.ed-tab:hover { color: var(--text); }
+.ed-tab.is-on {
+  color: var(--bg); background: var(--text); border-color: var(--text);
+}
+
+/* display:grid у .ed-body перебивает атрибут hidden — возвращаем ему силу */
+.ed-body[hidden] { display: none; }

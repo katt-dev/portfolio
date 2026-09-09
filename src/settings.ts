@@ -38,6 +38,7 @@
 
 
 import projectsData from "./projects.json";
+import contentData from "./content.json";
 
 // ----------------------------------------------------------------------------
 //  ТИПЫ (НЕ ТРОГАЙ — нужны сайту, чтобы понимать структуру данных)
@@ -57,12 +58,20 @@ export interface TeamMember {
 // Пусто "" -> плашка со стадией не показывается.
 export type ProjectStatus = "" | "concept" | "alpha" | "beta" | "early" | "release";
 
+// Как показывать обложку и скриншоты проекта:
+//   "auto"   — картинка видна ЦЕЛИКОМ, ничего не обрезается, высота
+//              подстраивается под саму картинку и под размер окна;
+//   "custom" — жёсткий формат 16:10, картинка заполняет блок и обрезается
+//              по краям (так ты сам решаешь, какой кадр показать).
+export type ImageFit = "auto" | "custom";
+
 export interface Project {
   id: string;
   num: string;
   year: string;
   engine: string;
   status: ProjectStatus;
+  imageFit: ImageFit;
   tags: string[];
   cover: string;
   title: TextPair;
@@ -86,13 +95,13 @@ export interface Project {
 //  1. ПРО СЕБЯ — имя, контакты, портрет
 // ============================================================================
 
-export const NAME:     string = "katt";           // полное имя (футер, подпись у фото)
-export const EMAIL:    string = ""; // почта. Пусто "" -> кнопки «написать» скрыты
-export const DISCORD:  string = "Telegram: @katt_dev\nDiscord: @katt.dev"; // строка под почтой в «Контактах»
-export const BADGE:    string = "Game Developer";
-
-// Портрет на главном экране — вставь ссылку на своё фото:
-export const PORTRAIT: string = "https://allwebs.ru/images/2026/09/08/a5da47961c2b1621944291e9941d5015.png";
+// Значения берутся из  src/content.json  — его правит редактор
+// (вкладка «Сайт»). Руками файл трогать не нужно, но можно.
+export const NAME:     string = contentData.name;
+export const EMAIL:    string = contentData.email;    // пусто "" -> кнопки «написать» скрыты
+export const DISCORD:  string = contentData.discord;  // строка под почтой в «Контактах»
+export const BADGE:    string = contentData.badge;
+export const PORTRAIT: string = contentData.portrait; // портрет на главном экране
 
 
 // ----------------------------------------------------------------------------
@@ -123,90 +132,16 @@ export const ADMIN_SECRET: string = "katt-edit-2026";
 export const GITHUB_REPO: string   = "ka1tt/portfolio"; // имя/репозиторий
 export const GITHUB_BRANCH: string = "main";
 export const PROJECTS_PATH: string = "src/projects.json";
+export const CONTENT_PATH: string  = "src/content.json";
 
 
 // ============================================================================
 //  2. ТЕКСТЫ САЙТА — все надписи, что видит посетитель (два языка)
 // ============================================================================
 
-export const UI = {
-  ru: {
-    firstName:   "katt",
-    lastName:    "",
-    logo:        "katt",
-    location:    "Ahaha Studio(Основная) · Ancy Forge Studio(Неофициальная)",
-    heroBio:     "Game Developer · C# · Unity · Godot 4",
-    about: [
-      "Я разработчик игр, специализирующийся на создании игр под ключ. ",
-      "Самостоятельно занимаюсь практически всеми аспектами разработки - от проектирования игровой логики и интерфейса до работы с механиками, системами и визуальной частью.",
-      "Единственное направление, которым я не занимаюсь, - серверная разработка.",
-    ],
-    navProjects: "Проекты",
-    navAbout:    "Обо мне",
-    navContact:  "Контакты",
-    viewWork:    "Смотреть проекты",
-    writeMe:     "Написать на почту",
-    featured:    "Избранные проекты",
-    clickHint:   "Нажми на блок, чтобы открыть кейс",
-    aboutTitle:  "Обо мне",
-    aboutSub:    "Краткая биография",
-    // НАЗВАНИЕ ВКЛАДКИ БРАУЗЕРА (то, что видно на самой вкладке)
-    tabTitle:    "katt — Game Developer",
-    contactTitle:"Контакты",
-    contactMe:   "Связаться со мной",
-    contactNote: "Открыт для интересных проектов, консультаций и разговоров о геймдеве. Обычно отвечаю в течение 3-х часов.",
-    handmade:    "Сделано на заказ",
-    teamLabel:   "Команда проекта",
-    roleLabel:   "Моя роль",
-    statusLabel: "Стадия",
-    mailBtn:     "Написать руководителю",
-    settings:    "Настройки",
-    language:    "Язык сайта",
-    langHint:    "Выбор запоминается и не сбрасывается после перезагрузки.",
-    close:       "Закрыть",
-    themeAria:   "Сменить тему",
-    settingsAria:"Открыть настройки",
-    editorBtn:   "Редактор проектов",
-  },
-  en: {
-    firstName:   "katt",
-    lastName:    "",
-    logo:        "katt",
-    location:    "Studios: «Ahaha Studio» «Ancy Forge Studio»",
-    heroBio:     "Unity · Godot 4",
-    about: [
-      "Coding in Python, C#, GDScript.",
-      "",
-      "",
-    ],
-    navProjects: "Work",
-    navAbout:    "About",
-    navContact:  "Contact",
-    viewWork:    "View projects",
-    writeMe:     "Write me",
-    featured:    "Selected work",
-    clickHint:   "Click a card to open the case",
-    aboutTitle:  "About",
-    aboutSub:    "Short bio",
-    // BROWSER TAB TITLE
-    tabTitle:    "katt — Game Developer",
-    contactTitle:"Contact",
-    contactMe:   "Get in touch",
-    contactNote: "Open to interesting projects, consulting and gamedev talk. I usually reply within 3 hours.",
-    handmade:    "Made to order",
-    teamLabel:   "Project team",
-    roleLabel:   "My role",
-    statusLabel: "Stage",
-    mailBtn:     "Email the lead",
-    settings:    "Settings",
-    language:    "Site language",
-    langHint:    "Your choice is saved and survives a page reload.",
-    close:       "Close",
-    themeAria:   "Toggle theme",
-    settingsAria:"Open settings",
-    editorBtn:   "Project editor",
-  },
-};
+// Все надписи сайта на двух языках лежат в  src/content.json ,
+// раздел "ui". Правятся в редакторе, вкладка «Сайт».
+export const UI = contentData.ui;
 
 export type UiText = (typeof UI)["ru"];
 

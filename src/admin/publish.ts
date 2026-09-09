@@ -11,7 +11,7 @@
 //   Служебный файл — трогать не нужно.
 // ============================================================================
 
-import { GITHUB_REPO, GITHUB_BRANCH, PROJECTS_PATH } from "../settings";
+import { GITHUB_REPO, GITHUB_BRANCH } from "../settings";
 
 const TOKEN_KEY = "katt.gh.token";
 const API = "https://api.github.com";
@@ -75,12 +75,19 @@ const say = (lang: Lang, ru: string, en: string) => (lang === "ru" ? ru : en);
 //  Публикация
 // ---------------------------------------------------------------------------
 
+export interface FileToPublish {
+  path: string;
+  content: string;
+}
+
 /**
- * Записывает projects.json в репозиторий одним коммитом.
+ * Записывает несколько файлов ОДНИМ коммитом (Git Data API).
+ * Один коммит = одна пересборка сайта, а не две.
+ *
  * Возвращает понятное сообщение вместо того, чтобы бросать исключение.
  */
-export async function publishProjects(
-  json: string,
+export async function publishFiles(
+  files: FileToPublish[],
   token: string,
   lang: Lang,
 ): Promise<PublishResult> {
@@ -88,75 +95,112 @@ export async function publishProjects(
     return { ok: false, message: say(lang, "Сначала вставь токен GitHub.", "Paste your GitHub token first.") };
   }
   if (!GITHUB_REPO.includes("/")) {
-    return {
-      ok: false,
-      message: say(lang,
-        'В settings.ts неверно указан GITHUB_REPO. Нужен вид "имя/репозиторий".',
-        'GITHUB_REPO in settings.ts is malformed. It must look like "owner/repo".'),
-    };
+    return { ok: false, message: say(lang,
+      'В settings.ts неверно указан GITHUB_REPO. Нужен вид "имя/репозиторий".',
+      'GITHUB_REPO in settings.ts is malformed. It must look like "owner/repo".') };
   }
 
-  const url = `${API}/repos/${GITHUB_REPO}/contents/${PROJECTS_PATH}`;
+  const repo = `${API}/repos/${GITHUB_REPO}`;
+  const h = headers(token);
+
+  const fail = (status: number, detail = "") => ({
+    ok: false as const,
+    message: say(lang,
+      `GitHub ответил ошибкой ${status}. ${detail}`,
+      `GitHub returned ${status}. ${detail}`),
+  });
 
   try {
-    // 1) Узнаём sha текущего файла — без него GitHub не даст его перезаписать.
-    let sha: string | undefined;
-    const head = await fetch(`${url}?ref=${encodeURIComponent(GITHUB_BRANCH)}`, {
-      headers: headers(token),
-    });
+    // 0) Проверяем доступ заранее — иначе GitHub отвечает невнятной 403/404.
+    const probe = await fetch(repo, { headers: h });
+    if (probe.status === 401) {
+      return { ok: false, message: say(lang,
+        "Токен не подошёл (401). Скорее всего скопирован не полностью или уже истёк — создай новый.",
+        "Token rejected (401). It is probably incomplete or expired — create a new one.") };
+    }
+    if (probe.status === 403 || probe.status === 404) {
+      return { ok: false, message: say(lang,
+        `Токен не видит репозиторий ${GITHUB_REPO}. В настройках токена: Repository access -> Only select repositories -> выбери «${GITHUB_REPO.split("/")[1]}».`,
+        `The token cannot see ${GITHUB_REPO}. In the token settings: Repository access -> Only select repositories -> pick "${GITHUB_REPO.split("/")[1]}".`) };
+    }
+    if (!probe.ok) return fail(probe.status);
 
-    if (head.status === 401) {
+    const perms = (await probe.json())?.permissions;
+    if (perms && perms.push === false) {
       return { ok: false, message: say(lang,
-        "Токен не подошёл (401). Проверь, что скопировал его целиком и он не истёк.",
-        "Token rejected (401). Check that you copied it fully and it has not expired.") };
+        "Репозиторий токен видит, но писать в него не может. В настройках токена: Permissions -> Repository permissions -> Contents -> поставь Read and write (сейчас стоит Read-only).",
+        "The token can see the repository but cannot write. In the token settings: Permissions -> Repository permissions -> Contents -> set Read and write (currently Read-only).") };
     }
-    if (head.status === 403) {
-      return { ok: false, message: say(lang,
-        "Нет прав (403). У токена должно быть разрешение Contents: Read and write для этого репозитория.",
-        "Forbidden (403). The token needs Contents: Read and write permission for this repository.") };
-    }
-    if (head.ok) {
-      const data = await head.json();
-      sha = data.sha;
-    } else if (head.status !== 404) {
-      return { ok: false, message: say(lang,
-        `GitHub ответил ошибкой ${head.status} при чтении файла.`,
-        `GitHub returned ${head.status} while reading the file.`) };
-    }
-    // 404 = файла ещё нет, создадим новый — это нормально.
 
-    // 2) Пишем файл.
-    const res = await fetch(url, {
-      method: "PUT",
-      headers: headers(token),
+    // 1) Где сейчас находится ветка.
+    const refRes = await fetch(`${repo}/git/ref/heads/${encodeURIComponent(GITHUB_BRANCH)}`, { headers: h });
+    if (!refRes.ok) return fail(refRes.status);
+    const baseSha = (await refRes.json())?.object?.sha as string;
+
+    const commitRes = await fetch(`${repo}/git/commits/${baseSha}`, { headers: h });
+    if (!commitRes.ok) return fail(commitRes.status);
+    const baseTree = (await commitRes.json())?.tree?.sha as string;
+
+    // 2) Загружаем содержимое файлов.
+    const blobs: { path: string; sha: string }[] = [];
+    for (const f of files) {
+      const res = await fetch(`${repo}/git/blobs`, {
+        method: "POST",
+        headers: h,
+        body: JSON.stringify({ content: toBase64(f.content), encoding: "base64" }),
+      });
+      if (res.status === 403) {
+        return { ok: false, message: say(lang,
+          "GitHub не разрешил запись (403). Проверь, что у токена Contents стоит Read and write, а репозиторий выбран в Repository access.",
+          "GitHub refused the write (403). Check that the token has Contents: Read and write and the repository selected.") };
+      }
+      if (!res.ok) return fail(res.status);
+      blobs.push({ path: f.path, sha: (await res.json()).sha });
+    }
+
+    // 3) Новое дерево поверх текущего.
+    const treeRes = await fetch(`${repo}/git/trees`, {
+      method: "POST",
+      headers: h,
       body: JSON.stringify({
-        message: "content: обновление проектов из редактора",
-        content: toBase64(json),
-        branch: GITHUB_BRANCH,
-        ...(sha ? { sha } : {}),
+        base_tree: baseTree,
+        tree: blobs.map((b) => ({ path: b.path, mode: "100644", type: "blob", sha: b.sha })),
       }),
     });
+    if (!treeRes.ok) return fail(treeRes.status);
+    const treeSha = (await treeRes.json()).sha;
 
-    if (res.status === 409) {
-      return { ok: false, message: say(lang,
-        "Файл успели изменить с другого устройства. Обнови страницу и опубликуй заново.",
-        "The file changed elsewhere. Reload the page and publish again.") };
-    }
-    if (!res.ok) {
-      let detail = "";
-      try { detail = (await res.json())?.message ?? ""; } catch { /* ignore */ }
-      return { ok: false, message: say(lang,
-        `Не удалось опубликовать (${res.status}). ${detail}`,
-        `Publish failed (${res.status}). ${detail}`) };
-    }
+    // 4) Коммит.
+    const msg = files.length > 1
+      ? "content: обновление сайта из редактора"
+      : `content: обновление ${files[0].path} из редактора`;
+    const newCommit = await fetch(`${repo}/git/commits`, {
+      method: "POST",
+      headers: h,
+      body: JSON.stringify({ message: msg, tree: treeSha, parents: [baseSha] }),
+    });
+    if (!newCommit.ok) return fail(newCommit.status);
+    const commit = await newCommit.json();
 
-    const out = await res.json();
+    // 5) Двигаем ветку на новый коммит.
+    const upd = await fetch(`${repo}/git/refs/heads/${encodeURIComponent(GITHUB_BRANCH)}`, {
+      method: "PATCH",
+      headers: h,
+      body: JSON.stringify({ sha: commit.sha }),
+    });
+    if (upd.status === 422) {
+      return { ok: false, message: say(lang,
+        "В репозитории появились более новые изменения. Обнови страницу и опубликуй заново.",
+        "The repository has newer changes. Reload the page and publish again.") };
+    }
+    if (!upd.ok) return fail(upd.status);
+
     return {
       ok: true,
-      commitUrl: out?.commit?.html_url,
+      commitUrl: commit.html_url,
       message: say(lang,
-        "Опубликовано. GitHub пересобирает сайт — обычно занимает 1–2 минуты.",
-        "Published. GitHub is rebuilding the site — usually 1–2 minutes."),
+        "Опубликовано. GitHub пересобирает сайт — обычно занимает 1-2 минуты.",
+        "Published. GitHub is rebuilding the site — usually 1-2 minutes."),
     };
   } catch {
     return { ok: false, message: say(lang,

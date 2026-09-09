@@ -552,3 +552,47 @@ body::after {
 .collab__mail:hover {
   color: var(--accent); border-color: var(--accent); transform: translateY(-1px);
 }
+
+/* ===========================================================================
+   ПОДГОНКА КАРТИНОК — поле imageFit у проекта
+
+   "custom" = как было: жёсткий формат 16:10, картинка заполняет блок
+              и обрезается по краям.
+   "auto"   = картинка видна целиком, ничего не режется, высота
+              подстраивается под саму картинку и под высоту окна.
+   =========================================================================== */
+
+/* --- обложка карточки ---
+   Рамку 16:10 оставляем, иначе карточки в сетке разъедутся по высоте.
+   Но картинку вписываем целиком, а пустоту заливаем фоном. */
+.project-card__cover--auto .project-card__img {
+  object-fit: contain;
+  background: var(--bg-soft);
+}
+
+/* --- скриншоты в окне проекта ---
+   Тут высота действительно подстраивается: слайд перестаёт быть 16:10,
+   а картинка ограничена высотой окна, чтобы всегда помещалась целиком. */
+.carousel--auto .carousel__slide {
+  aspect-ratio: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+.carousel--auto .carousel__img {
+  width: 100%;
+  height: auto;
+  max-height: min(70vh, 620px);
+  object-fit: contain;
+}
+@media (max-width: 900px) {
+  .carousel--auto .carousel__img { max-height: 60vh; }
+}
+
+/* Участник без аватарки — пустой круг вместо картинки */
+.collab__avatar--empty {
+  display: block;
+  background: var(--surface-2);
+  border-style: dashed;
+}
