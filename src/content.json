@@ -13,6 +13,11 @@
       "label": "Discord",
       "value": "@katt.dev",
       "url": ""
+    },
+    {
+      "label": "Steam",
+      "value": "katt-dev",
+      "url": ""
     }
   ],
   "showContactHint": false,
