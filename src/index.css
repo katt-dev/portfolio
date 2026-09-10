@@ -161,6 +161,7 @@ body::after {
 .project-card__cover {
   position: relative; overflow: hidden;
   aspect-ratio: 16/10; width: 100%;
+  flex-shrink: 0;   /* длинный текст под обложкой не должен её сплющивать */
 }
 .project-card__img {
   width: 100%; height: 100%; object-fit: cover;
@@ -197,7 +198,9 @@ body::after {
   font-size: 15px; color: var(--text-soft);
   margin: 0 0 16px; line-height: 1.45;
 }
-.project-card__tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; }
+/* Теги идут сразу за подписью. Раньше их прижимало к низу (margin-top: auto),
+   и у карточки с короткой подписью зияла дыра во всю свободную высоту. */
+.project-card__tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 0; }
 .project-card__arrow {
   transition: transform 0.4s var(--ease), color 0.3s; color: var(--text-muted);
 }
@@ -367,6 +370,15 @@ body::after {
   font-weight: 500;
 }
 .contact-btn--link:hover { color: #fff; }
+
+/* Значок площадки на кнопке: свой фирменный цвет, а на ховере — заодно
+   с подписью (фон под ней становится акцентным). */
+.contact-btn__icon {
+  display: inline-flex; flex-shrink: 0;
+  color: var(--brand, currentColor);
+  transition: color 0.3s var(--ease);
+}
+.contact-btn:hover .contact-btn__icon { color: currentColor; }
 
 .nav-link {
   font-family: "JetBrains Mono", monospace;
@@ -615,6 +627,9 @@ body::after {
   display: flex; flex-direction: column; min-width: 0;
   overflow-y: auto;   /* длинное описание скроллится внутри окна */
 }
+/* Колонка — флекс, и по умолчанию всё в ней сжимается: чем длиннее описание,
+   тем ниже становились скриншоты. Запрещаем сжатие — лишнее уходит в скролл. */
+.modal__media > * { flex-shrink: 0; }
 .modal__desc {
   padding: 20px 22px 24px;
   border-top: 1px solid var(--line);
@@ -780,21 +795,29 @@ h1, h2, h3, p, a, span { overflow-wrap: break-word; }
 .contacts__item:hover .contacts__go { color: var(--brand); transform: translateX(2px); }
 
 /* Фирменные цвета — официальные, из пакета simple-icons.
+   Один набор на всё: и плашки контактов, и кнопки площадок в окне проекта
+   берут цвет отсюда через класс .brand-<сервис>.
+
    Исключение: у GitHub, X и Steam фирменный цвет чёрный (#181717 / #000000).
    На тёмной теме такой значок пропал бы, поэтому им даём нейтральный
    оттенок, читаемый и на светлом, и на тёмном фоне. */
-.contacts__item--telegram { --brand: #26a5e4; }
-.contacts__item--discord  { --brand: #5865f2; }
-.contacts__item--github   { --brand: #8b949e; } /* офиц. #181717 — чёрный */
-.contacts__item--itch     { --brand: #fa5c5c; }
-.contacts__item--youtube  { --brand: #ff0000; }
-.contacts__item--twitch   { --brand: #9146ff; }
-.contacts__item--vk       { --brand: #0077ff; }
-.contacts__item--x        { --brand: #71767b; } /* офиц. #000000 — чёрный */
-.contacts__item--steam    { --brand: #66c0f4; } /* офиц. #000000 — чёрный */
-.contacts__item--boosty   { --brand: #f15f2c; }
-.contacts__item--email    { --brand: var(--accent-2); }
-.contacts__item--link     { --brand: var(--text-muted); }
+.brand-telegram { --brand: #26a5e4; }
+.brand-discord  { --brand: #5865f2; }
+.brand-github   { --brand: #8b949e; } /* офиц. #181717 — чёрный */
+.brand-itch     { --brand: #fa5c5c; }
+.brand-youtube  { --brand: #ff0000; }
+.brand-twitch   { --brand: #9146ff; }
+.brand-vk       { --brand: #0077ff; }
+.brand-x        { --brand: #71767b; } /* офиц. #000000 — чёрный */
+.brand-boosty   { --brand: #f15f2c; }
+.brand-email    { --brand: var(--accent-2); }
+.brand-link     { --brand: var(--text-muted); }
+
+/* Steam. Фирменный цвет чёрный, поэтому берём оттенки его же палитры:
+   тёмно-синий на светлой теме и светло-серо-голубой на тёмной.
+   Раньше тут стоял #66c0f4 — он читался как бирюзовый, у Steam такого нет. */
+.brand-steam                { --brand: #1b2838; }
+[data-theme="dark"] .brand-steam { --brand: #c7d5e0; }
 
 /* «Скопировано» — всплывает над плашкой */
 .contacts__copied {

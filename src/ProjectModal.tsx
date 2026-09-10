@@ -12,6 +12,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { STATUS, type Lang, type Project } from "./settings";
 import type { UiBlock } from "./contentStore";
+import { detectService } from "./contacts";
+import ContactIcon from "./ContactIcon";
 
 interface Props {
   project: Project;
@@ -169,12 +171,17 @@ export default function ProjectModal({ project, lang, copy, email, onClose }: Pr
 
               {/* Кнопки площадок: Steam, itch.io, свой сайт — что добавишь,
                   то и покажется. Подпись у каждой своя. */}
-              {project.links.map((l, i) => (
-                <a key={i} className="contact-btn contact-btn--link" href={l.url} target="_blank" rel="noopener noreferrer">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>
-                  {l.label[lang] || hostOf(l.url)}
-                </a>
-              ))}
+              {project.links.map((l, i) => {
+                // Значок и цвет подбираются по ссылке и подписи — те же самые,
+                // что и у плашек контактов. Незнакомая ссылка получит цепочку.
+                const service = detectService({ label: l.label[lang], value: l.url, url: l.url });
+                return (
+                  <a key={i} className={`contact-btn contact-btn--link brand-${service}`} href={l.url} target="_blank" rel="noopener noreferrer">
+                    <span className="contact-btn__icon" aria-hidden="true"><ContactIcon service={service} /></span>
+                    {l.label[lang] || hostOf(l.url)}
+                  </a>
+                );
+              })}
 
               {/* «Написать руководителю» — только если почта заполнена */}
               {email && (

@@ -313,12 +313,12 @@ export default function App() {
                     return (
                       <li key={i}>
                         {c.href ? (
-                          <a className={`contacts__item contacts__item--${c.service}`} href={c.href} target="_blank" rel="noopener noreferrer"
+                          <a className={`contacts__item brand-${c.service}`} href={c.href} target="_blank" rel="noopener noreferrer"
                              title={copy.contactsHint}>
                             {inner}
                           </a>
                         ) : (
-                          <button type="button" className={`contacts__item contacts__item--${c.service}`} title={copy.contactsCopy}
+                          <button type="button" className={`contacts__item brand-${c.service}`} title={copy.contactsCopy}
                             onClick={() => {
                               navigator.clipboard?.writeText(c.value).then(
                                 () => { setCopied(c.value); window.setTimeout(() => setCopied(""), 1800); },
