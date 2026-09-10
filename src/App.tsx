@@ -214,8 +214,25 @@ export default function App() {
                 {copy.viewWork}
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
               </a>
-              {/* Кнопка «написать» — только если почта заполнена (вкладка «Сайт») */}
-              {content.email && <a href={`mailto:${content.email}`} className="contact-btn contact-btn--ghost">{copy.writeMe}</a>}
+              {/* Кнопка «написать» — только если почта заполнена (вкладка «Сайт»).
+                  Адрес заодно копируется: без назначенной почтовой программы
+                  mailto: молча не срабатывает, и кнопка кажется мёртвой. */}
+              {content.email && (
+                <a
+                  href={`mailto:${content.email}`}
+                  className="contact-btn contact-btn--ghost contact-btn--mail"
+                  title={content.email}
+                  onClick={() => {
+                    navigator.clipboard?.writeText(content.email).then(
+                      () => { setCopied(content.email); window.setTimeout(() => setCopied(""), 1800); },
+                      () => { /* браузер не дал доступ к буферу */ },
+                    );
+                  }}
+                >
+                  {copy.writeMe}
+                  {copied === content.email && <span className="contacts__copied">{copy.contactsCopied}</span>}
+                </a>
+              )}
             </div>
           </div>
           <div style={{ position: "relative" }}>
