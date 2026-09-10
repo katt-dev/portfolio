@@ -52,6 +52,32 @@ function Text({ label, value, onChange, area }: {
   );
 }
 
+// Теги хранятся массивом, но печатать их нужно строкой: держим сырой текст
+// в своём состоянии, иначе только что набранная запятая исчезает при разборе.
+function Tags({ label, value, onChange }: {
+  label: string; value: string[]; onChange: (v: string[]) => void;
+}) {
+  const joined = value.join(", ");
+  const [raw, setRaw] = useState(joined);
+
+  useEffect(() => {
+    setRaw((prev) =>
+      prev.split(",").map((s) => s.trim()).filter(Boolean).join(", ") === joined ? prev : joined
+    );
+  }, [joined]);
+
+  return (
+    <Text
+      label={label}
+      value={raw}
+      onChange={(v) => {
+        setRaw(v);
+        onChange(v.split(",").map((s) => s.trim()).filter(Boolean));
+      }}
+    />
+  );
+}
+
 function Pair({ label, value, onChange, area }: {
   label: string; value: TextPair; onChange: (v: TextPair) => void; area?: boolean;
 }) {
@@ -458,10 +484,11 @@ export default function ProjectEditor({ projects, setProjects, content, setConte
                   <span className="ed-hint">{t.ed_fitHint}</span>
                 </label>
 
-                <Text
+                <Tags
+                  key={current.id}
                   label={t.ed_f_tags}
-                  value={current.tags.join(", ")}
-                  onChange={(v) => patch({ tags: v.split(",").map((t) => t.trim()).filter(Boolean) })}
+                  value={current.tags}
+                  onChange={(tags) => patch({ tags })}
                 />
 
                 <ImageDrop
