@@ -18,6 +18,21 @@ export interface ContactItem {
   url: string;
 }
 
+/**
+ * Ссылка «написать письмо».
+ *
+ * Раньше тут был mailto:. Он открывает почтовую программу, назначенную в
+ * системе, а если её нет — браузер молча ничего не делает, и кнопка выглядит
+ * сломанной. Поэтому ведём в веб-интерфейс Gmail: он открывается вкладкой
+ * в браузере с уже подставленным адресом и темой.
+ */
+export function mailUrl(email: string, subject = ""): string {
+  const to = email.trim().replace(/^mailto:/i, "");
+  const p = new URLSearchParams({ view: "cm", fs: "1", to });
+  if (subject) p.set("su", subject);
+  return `https://mail.google.com/mail/?${p.toString()}`;
+}
+
 /** Убираем @ и пробелы — в ссылках ник нужен «голым». */
 const handle = (v: string) => v.trim().replace(/^@+/, "");
 
@@ -37,8 +52,8 @@ export function resolveUrl(item: ContactItem): string {
 
   // Уже полноценный адрес
   if (/^https?:\/\//i.test(value)) return value;
-  if (/^mailto:/i.test(value)) return value;
-  if (isEmail(value)) return `mailto:${value}`;
+  if (/^mailto:/i.test(value)) return mailUrl(value);
+  if (isEmail(value)) return mailUrl(value);
 
   // Домен без протокола: katt.itch.io, vk.com/katt
   if (/^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(value)) return `https://${value}`;

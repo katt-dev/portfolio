@@ -362,9 +362,6 @@ body::after {
 .contact-btn:active { transform: translate(0,0); box-shadow: none; }
 .contact-btn--ghost { background: transparent; color: var(--text); }
 
-/* Почтовой кнопке — точка отсчёта для всплывающего «скопировано» */
-.contact-btn--mail { position: relative; }
-
 /* Кнопка-ссылка на игру / Steam — контурная, вторая по счёту */
 .contact-btn--link {
   background: transparent;

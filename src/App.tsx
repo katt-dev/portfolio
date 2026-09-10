@@ -18,7 +18,7 @@
 import { useEffect, useState, useRef } from "react";
 import { STATUS, type Lang, type Project } from "./settings";
 import { loadContent, type SiteContent } from "./contentStore";
-import { detectService, resolveUrl } from "./contacts";
+import { detectService, mailUrl, resolveUrl } from "./contacts";
 import ContactIcon from "./ContactIcon";
 import { loadProjects } from "./projectsStore";
 import { checkAccessFromUrl } from "./adminAccess";
@@ -215,22 +215,16 @@ export default function App() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
               </a>
               {/* Кнопка «написать» — только если почта заполнена (вкладка «Сайт»).
-                  Адрес заодно копируется: без назначенной почтовой программы
-                  mailto: молча не срабатывает, и кнопка кажется мёртвой. */}
+                  Открывается вкладка Gmail с готовым письмом. */}
               {content.email && (
                 <a
-                  href={`mailto:${content.email}`}
-                  className="contact-btn contact-btn--ghost contact-btn--mail"
+                  href={mailUrl(content.email)}
+                  className="contact-btn contact-btn--ghost"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   title={content.email}
-                  onClick={() => {
-                    navigator.clipboard?.writeText(content.email).then(
-                      () => { setCopied(content.email); window.setTimeout(() => setCopied(""), 1800); },
-                      () => { /* браузер не дал доступ к буферу */ },
-                    );
-                  }}
                 >
                   {copy.writeMe}
-                  {copied === content.email && <span className="contacts__copied">{copy.contactsCopied}</span>}
                 </a>
               )}
             </div>
@@ -285,7 +279,9 @@ export default function App() {
           {/* Почта — только если она заполнена */}
           {content.email && (
             <a
-              href={`mailto:${content.email}`}
+              href={mailUrl(content.email)}
+              target="_blank"
+              rel="noopener noreferrer"
               className="display"
               style={{ display: "block", fontSize: "clamp(28px, 6vw, 72px)", textDecoration: "none", color: "var(--text)", marginTop: 16, transition: "color 0.3s" }}
               onMouseEnter={(e) => { e.currentTarget.style.color = "var(--accent)"; }}

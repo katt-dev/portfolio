@@ -12,7 +12,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { STATUS, type Lang, type Project } from "./settings";
 import type { UiBlock } from "./contentStore";
-import { detectService } from "./contacts";
+import { detectService, mailUrl } from "./contacts";
 import ContactIcon from "./ContactIcon";
 
 interface Props {
@@ -26,14 +26,6 @@ interface Props {
 
 export default function ProjectModal({ project, lang, copy, email, onClose }: Props) {
   const [slide, setSlide] = useState(0);
-  const [mailCopied, setMailCopied] = useState(false);
-
-  // «Скопировано» гаснет само.
-  useEffect(() => {
-    if (!mailCopied) return;
-    const id = window.setTimeout(() => setMailCopied(false), 1800);
-    return () => window.clearTimeout(id);
-  }, [mailCopied]);
 
   // Проект сменился — показываем первый скриншот.
   useEffect(() => { setSlide(0); }, [project.id]);
@@ -158,8 +150,10 @@ export default function ProjectModal({ project, lang, copy, email, onClose }: Pr
                         {c.email && (
                           <a
                             className="collab__mail"
-                            href={`mailto:${c.email}?subject=${encodeURIComponent(mailSubject(project.title[lang]))}`}
-                            title={copy.mailBtn}
+                            href={mailUrl(c.email, mailSubject(project.title[lang]))}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={c.email}
                             aria-label={`${copy.mailBtn}: ${c.name}`}
                           >
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 8l-10 6L2 8"/></svg>
@@ -192,26 +186,17 @@ export default function ProjectModal({ project, lang, copy, email, onClose }: Pr
               })}
 
               {/* «Написать руководителю» — только если почта заполнена.
-
-                  Ссылка mailto: открывает почтовую программу, но если в системе
-                  такой программы не назначено, браузер молча ничего не делает —
-                  кнопка выглядит сломанной. Поэтому по клику адрес заодно
-                  копируется в буфер: реакция есть в любом случае. */}
+                  Открывается вкладка Gmail с готовым письмом. */}
               {email && (
                 <a
-                  className="contact-btn contact-btn--mail"
-                  href={`mailto:${email}?subject=${encodeURIComponent(mailSubject(project.title[lang]))}`}
+                  className="contact-btn"
+                  href={mailUrl(email, mailSubject(project.title[lang]))}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   title={email}
-                  onClick={() => {
-                    navigator.clipboard?.writeText(email).then(
-                      () => setMailCopied(true),
-                      () => { /* браузер не дал доступ к буферу */ },
-                    );
-                  }}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 8l-10 6L2 8"/></svg>
                   {copy.mailBtn}
-                  {mailCopied && <span className="contacts__copied">{copy.contactsCopied}</span>}
                 </a>
               )}
             </div>
