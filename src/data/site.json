@@ -1,0 +1,39 @@
+{
+  "name": "katt",
+  "role": "Game Developer",
+  "roleLine": "Game developer / Creative technologist",
+  "available": true,
+  "availableLabel": "Открыт к проектам",
+  "responseTime": "Обычно отвечаю в течение трёх часов",
+  "studio": "Ahaha Studio",
+  "email": "katt.devv@gmail.com",
+  "formEndpoint": "",
+  "hero": {
+    "eyebrow": "Gameplay. Systems. Worlds.",
+    "title": "Создаю игры, в которые хочется играть.",
+    "lead": "Разрабатываю игровые механики, интерактивные системы и цифровые миры, где каждая деталь работает на игровой опыт."
+  },
+  "about": {
+    "title": "Не просто пишу код. Создаю игровой опыт.",
+    "text": [
+      "Я занимаюсь разработкой игр и интерактивных систем. Мне интересно превращать идеи в работающие механики, создавать понятные инструменты и находить технические решения, которые делают игровой опыт выразительнее.",
+      "В работе для меня важны отзывчивость управления, качество реализации, внимание к деталям и ощущение целостности проекта."
+    ],
+    "facts": [
+      { "label": "Движки", "value": "Unity · Godot 4" },
+      { "label": "Языки", "value": "C# · Python · GDScript" },
+      { "label": "Сеть", "value": "Mirror · Netcode for GameObjects" },
+      { "label": "Студия", "value": "Ahaha Studio" }
+    ]
+  },
+  "contact": {
+    "title": "Есть идея? Давай превратим её в игру.",
+    "eyebrow": "Let's build something playable."
+  },
+  "links": [
+    { "label": "Telegram", "value": "@katt_dev", "url": "https://t.me/katt_dev" },
+    { "label": "Discord", "value": "katt.dev", "url": "", "copy": "katt.dev" },
+    { "label": "Steam", "value": "katt-dev", "url": "", "copy": "katt-dev" },
+    { "label": "itch.io", "value": "katt-dev", "url": "", "copy": "katt-dev" }
+  ]
+}

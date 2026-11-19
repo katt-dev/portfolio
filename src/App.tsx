@@ -1,426 +1,92 @@
-// ============================================================================
-//
-//   ЭТО КОД САЙТА (логика главного экрана и проектов).
-//
-//   Контент — имя, тексты, проекты и обложки — лежит отдельно в
-//   файле  src/settings.ts . Именно его и надо править.
-//
-//   Проекты на главной раскладываются автоматически: сколько блоков в
-//   settings.ts (или добавлено в редакторе) — столько и покажется.
-//   Ширина карточек чередуется по шаблону SPAN_PATTERN ниже.
-//
-//   РЕДАКТОР ПРОЕКТОВ: заходишь один раз по секретному адресу
-//   (ADMIN_SECRET в settings.ts), браузер тебя запоминает — дальше кнопка
-//   в меню-шестерёнке или Ctrl+Shift+E. Подробности в src/adminAccess.ts.
-//
-// ============================================================================
+import { useEffect, useRef, useState } from 'react';
+import type { FormEvent } from 'react';
+import { Check, Copy, ExternalLink, Menu, Plus, X, Gamepad2, Globe2, Code2, MousePointer2, CheckCheck } from 'lucide-react';
+import { gsap } from 'gsap';
+import { projects, site, asset, coverOf, getProject } from './data/projects';
+import type { Project } from './data/projects';
+import { openProject, useRoute } from './lib/router';
+import { Mascot } from './Mascot';
 
-import { useEffect, useState, useRef } from "react";
-import { STATUS, type Lang, type Project } from "./settings";
-import { loadContent, type SiteContent } from "./contentStore";
-import { detectService, mailUrl, resolveUrl } from "./contacts";
-import ContactIcon from "./ContactIcon";
-import { loadProjects } from "./projectsStore";
-import { checkAccessFromUrl } from "./adminAccess";
-import ProjectModal from "./ProjectModal";
-import ProjectEditor from "./admin/ProjectEditor";
+const ping = () => window.dispatchEvent(new Event('substance:react'));
+const tagNames: Record<string,string> = { 'Gameplay Programming':'Игровые механики','Netcode':'Мультиплеер','UI':'Интерфейс','Systems Design':'Игровые системы','AI':'Поведение противников','Audio Systems':'Звуковые системы','Platform Integration':'Интеграция платформы','Tools':'Инструменты','Prototyping':'Прототипирование' };
 
-// Ширина карточек на главной, по кругу:
-//   pg-span4 = широкий блок   pg-span3 = средний   pg-span2 = узкий
-const SPAN_PATTERN = ["pg-span4", "pg-span2", "pg-span2", "pg-span4", "pg-span3", "pg-span3"];
-
-export default function App() {
-  // ---------- состояние ----------
-  const [theme, setTheme] = useState<"dark" | "light">(() => {
-    const saved = localStorage.getItem("theme") as "dark" | "light" | null;
-    if (saved) return saved;
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  });
-
-  const [lang, setLang] = useState<Lang>(() => {
-    const saved = localStorage.getItem("lang") as Lang | null;
-    if (saved === "ru" || saved === "en") return saved;
-    return navigator.language.toLowerCase().startsWith("ru") ? "ru" : "en";
-  });
-
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [copied, setCopied] = useState("");
-  const settingsRef = useRef<HTMLDivElement>(null);
-
-  const [projects, setProjects] = useState<Project[]>(() => loadProjects());
-  // Тексты сайта: у посетителя — из content.json, у тебя — твой черновик.
-  const [content, setContent] = useState<SiteContent>(() => loadContent());
-  const [active, setActive] = useState<Project | null>(null);
-
-  const { isAdmin, editorOpen, setEditorOpen } = useAdmin();
-
-  const copy = content.ui[lang];
-
-  // ---------- сайд-эффекты ----------
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
-  }, [theme]);
-
-  useEffect(() => {
-    document.documentElement.lang = lang;
-    localStorage.setItem("lang", lang);
-    // Название вкладки браузера — меняется вместе с языком (см. tabTitle в settings.ts)
-    document.title = copy.tabTitle;
-  }, [lang, copy.tabTitle]);
-
-  const open = (p: Project) => { setActive(p); setSettingsOpen(false); };
-  const close = () => setActive(null);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !active) setSettingsOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [active]);
-
-  useEffect(() => {
-    document.body.style.overflow = active || editorOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
-  }, [active, editorOpen]);
-
-  useEffect(() => {
-    if (!settingsOpen) return;
-    const onDown = (e: MouseEvent) => {
-      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
-        setSettingsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", onDown);
-    return () => document.removeEventListener("mousedown", onDown);
-  }, [settingsOpen]);
-
-  // Если проект открыт и его отредактировали/удалили — обновляем окно.
-  useEffect(() => {
-    if (!active) return;
-    const fresh = projects.find((p) => p.id === active.id);
-    if (!fresh) { setActive(null); return; }
-    if (fresh !== active) setActive(fresh);
-  }, [projects]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ---------- карточка проекта ----------
-  const Card = ({ p, i }: { p: Project; i: number }) => (
-    <button type="button" className="project-card" onClick={() => open(p)} style={{ animationDelay: `${0.07 * i}s` }} aria-label={`${copy.featured}: ${p.title[lang]}`}>
-      <div className={`project-card__cover project-card__cover--${p.imageFit}`}>
-        <img className="project-card__img" src={p.cover} alt={p.subtitle[lang]} loading="lazy" />
-        <span className="project-card__badge project-card__badge--year">{p.year}</span>
-        <span className="project-card__badge project-card__badge--engine">{p.engine}</span>
-        {/* Плашка стадии — только если стадия указана в settings.ts / редакторе */}
-        {p.status && (
-          <span className={`status-chip status-chip--${p.status} project-card__status`}>
-            {STATUS[p.status][lang]}
-          </span>
-        )}
-      </div>
-      <div className="project-card__body">
-        <div>
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <svg className="project-card__arrow" width="18" height="10" viewBox="0 0 18 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 5h16M12 1l5 4-5 4" /></svg>
-          </div>
-          <h3 className="project-card__title">{p.title[lang]}</h3>
-          <p className="project-card__sub">{p.subtitle[lang]}</p>
-        </div>
-        <div className="project-card__tags">
-          {p.tags.map((tag) => <span key={tag} className="tag">{tag}</span>)}
-        </div>
-      </div>
-    </button>
-  );
-
-  return (
-    <div style={{ minHeight: "100vh" }}>
-
-      {/* ====== ШАПКА ====== */}
-      <header style={{ position: "sticky", top: 0, zIndex: 100, borderBottom: "1px solid var(--line-strong)", background: "color-mix(in srgb, var(--bg) 85%, transparent)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }}>
-        <div className="wrap wrap--bar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
-          <a href="#top" className="display" style={{ fontSize: 20, textDecoration: "none", color: "var(--text)" }}>{copy.logo}</a>
-          <nav className="nav-links-desk" style={{ display: "flex", alignItems: "center", gap: 22 }}>
-            <a href="#projects" className="nav-link">{copy.navProjects}</a>
-            <a href="#about" className="nav-link">{copy.navAbout}</a>
-            <a href="#contact" className="nav-link">{copy.navContact}</a>
-          </nav>
-
-          <div className="header-actions">
-            {/* Кнопка настроек — внутри язык сайта */}
-            <div className="settings-wrap" ref={settingsRef}>
-              <button
-                type="button"
-                className={`gear-btn${settingsOpen ? " is-open" : ""}`}
-                onClick={() => setSettingsOpen((v) => !v)}
-                aria-label={copy.settingsAria}
-                aria-expanded={settingsOpen}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="3" />
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                </svg>
-              </button>
-
-              {settingsOpen && (
-                <div className="settings-panel" role="dialog" aria-label={copy.settings}>
-                  <h3 className="settings-panel__title">{copy.settings}</h3>
-                  <div className="settings-panel__label">{copy.language}</div>
-                  <div className="lang-switch">
-                    <button type="button" className={`lang-btn${lang === "ru" ? " is-on" : ""}`} onClick={() => setLang("ru")}>RU · Рус</button>
-                    <button type="button" className={`lang-btn${lang === "en" ? " is-on" : ""}`} onClick={() => setLang("en")}>EN · Eng</button>
-                  </div>
-                  <p className="settings-panel__hint">{copy.langHint}</p>
-
-                  {/* Кнопка редактора — появляется только после того,
-                      как ты зашёл по секретному адресу (см. adminAccess.ts) */}
-                  {isAdmin && (
-                    <>
-                      <div className="rule" style={{ margin: "14px 0 12px" }} />
-                      <button type="button" className="lang-btn is-on" style={{ width: "100%" }}
-                        onClick={() => { setEditorOpen(true); setSettingsOpen(false); }}>
-                        {copy.editorBtn}
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <button type="button" className="theme-toggle" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label={copy.themeAria}>
-              <span className="theme-toggle__knob">
-                {theme === "dark"
-                  ? <svg className="theme-toggle__icon" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
-                  : <svg className="theme-toggle__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
-                }
-              </span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <main id="top">
-
-        {/* ====== ГЕРОЙ ====== */}
-        <section className="wrap wrap--hero hero-grid">
-          <div>
-            <span className="mono" style={{ color: "var(--text-muted)" }}>{content.badge}</span>
-            <h1 className="display" style={{ fontSize: "clamp(48px, 9vw, 110px)", margin: "16px 0 0" }}>
-              {copy.firstName}<br />{copy.lastName}
-            </h1>
-            <p style={{ fontSize: 19, color: "var(--text-soft)", maxWidth: "46ch", marginTop: 24, lineHeight: 1.6 }}>{copy.heroBio}</p>
-            <div style={{ display: "flex", gap: 12, marginTop: 32, flexWrap: "wrap" }}>
-              <a href="#projects" className="contact-btn">
-                {copy.viewWork}
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
-              </a>
-              {/* Кнопка «написать» — только если почта заполнена (вкладка «Сайт»).
-                  Открывается вкладка Gmail с готовым письмом. */}
-              {content.email && (
-                <a
-                  href={mailUrl(content.email)}
-                  className="contact-btn contact-btn--ghost"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title={content.email}
-                >
-                  {copy.writeMe}
-                </a>
-              )}
-            </div>
-          </div>
-          <div style={{ position: "relative" }}>
-            <div style={{ position: "relative", border: "1px solid var(--text)", boxShadow: "8px 8px 0 var(--text)", overflow: "hidden", aspectRatio: "4/5" }}>
-              <img src={content.portrait} alt={content.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", filter: "grayscale(1) contrast(1.05)" }} />
-              {/* Подпись на портрете. Стили в index.css: плашка сама
-                  затемняет то, что под ней, — читается на любом фоне. */}
-              <div className="portrait__caption">
-                <span className="mono">{copy.location}</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ====== ПРОЕКТЫ ====== */}
-        <section id="projects" className="wrap">
-          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 32 }}>
-            <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 56px)", margin: 0 }}>{copy.featured}</h2>
-            {projects.length > 0 && <span className="mono" style={{ color: "var(--text-muted)" }}>{copy.clickHint}</span>}
-          </div>
-          <div className="rule" style={{ marginBottom: 32 }} />
-
-          {/* Карточки строятся по списку проектов: сколько есть — столько
-              и покажется. Удалил проект в settings.ts — блок просто исчез. */}
-          <div className="project-grid">
-            {projects.map((p, i) => (
-              <div key={`${p.id}-${i}`} className={SPAN_PATTERN[i % SPAN_PATTERN.length]}>
-                <Card p={p} i={i} />
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ====== ОБО МНЕ ====== */}
-        <section id="about" className="wrap wrap--divided">
-          <div className="rule section-rule" />
-          <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 56px)", margin: 0 }}>{copy.aboutTitle}</h2>
-          <span className="mono" style={{ color: "var(--text-muted)", display: "block", marginTop: 12 }}>{copy.aboutSub}</span>
-          <div className="about-text">
-            {copy.about.filter(Boolean).map((p, i) => <p key={i}>{p}</p>)}
-          </div>
-        </section>
-
-        {/* ====== КОНТАКТЫ ====== */}
-        <section id="contact" className="wrap wrap--contact wrap--divided">
-          <div className="rule section-rule" />
-          <h2 className="display" style={{ fontSize: "clamp(32px, 5vw, 56px)", margin: 0 }}>{copy.contactTitle}</h2>
-          <span className="mono" style={{ color: "var(--text-muted)", display: "block", marginTop: 12 }}>{copy.contactMe}</span>
-
-          {/* Почта — только если она заполнена */}
-          {content.email && (
-            <a
-              href={mailUrl(content.email)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="display"
-              style={{ display: "block", fontSize: "clamp(28px, 6vw, 72px)", textDecoration: "none", color: "var(--text)", marginTop: 16, transition: "color 0.3s" }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = "var(--accent)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text)"; }}
-            >
-              {content.email}
-            </a>
-          )}
-
-          {/* Контакты. Есть ссылка — открываем её, нет — копируем значение
-              (у Discord, например, публичной ссылки на профиль не бывает). */}
-          {content.contacts.length > 0 && (() => {
-            const items = content.contacts
-              .filter((c) => c.value.trim())
-              .map((c) => ({ ...c, href: resolveUrl(c), service: detectService(c) }));
-            if (!items.length) return null;
-
-            return (
-              <>
-                {content.showContactHint && (
-                  <p className="contacts__hint mono">
-                    {items.some((c) => c.href) ? copy.contactsHint : copy.contactsCopy}
-                  </p>
-                )}
-                <ul className="contacts">
-                  {items.map((c, i) => {
-                    const inner = (<>
-                      <span className="contacts__brand" aria-hidden="true">
-                        <ContactIcon service={c.service} />
-                      </span>
-                      <span className="contacts__text">
-                        {c.label && <span className="contacts__label">{c.label}</span>}
-                        <span className="contacts__value">{c.value}</span>
-                      </span>
-                      <span className="contacts__go" aria-hidden="true">
-                        {c.href
-                          ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>
-                          : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>}
-                      </span>
-                    </>);
-
-                    return (
-                      <li key={i}>
-                        {c.href ? (
-                          <a className={`contacts__item brand-${c.service}`} href={c.href} target="_blank" rel="noopener noreferrer"
-                             title={copy.contactsHint}>
-                            {inner}
-                          </a>
-                        ) : (
-                          <button type="button" className={`contacts__item brand-${c.service}`} title={copy.contactsCopy}
-                            onClick={() => {
-                              navigator.clipboard?.writeText(c.value).then(
-                                () => { setCopied(c.value); window.setTimeout(() => setCopied(""), 1800); },
-                                () => { /* браузер не дал доступ к буферу */ },
-                              );
-                            }}>
-                            {inner}
-                            {copied === c.value && <span className="contacts__copied">{copy.contactsCopied}</span>}
-                          </button>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </>
-            );
-          })()}
-
-          <p style={{ color: "var(--text-soft)", fontSize: 17, marginTop: 20, maxWidth: "50ch" }}>{copy.contactNote}</p>
-        </section>
-      </main>
-
-      {/* ====== ФУТЕР ====== */}
-      <footer style={{ borderTop: "1px solid var(--line-strong)" }}>
-        <div className="wrap wrap--foot" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-          <span className="mono" style={{ color: "var(--text-muted)" }}>© {new Date().getFullYear()} {content.name}</span>
-          <span className="mono" style={{ color: "var(--text-muted)" }}>{copy.handmade}</span>
-        </div>
-      </footer>
-
-      {/* ====== МОДАЛЬНОЕ ОКНО ====== */}
-      {active && (
-        <ProjectModal project={active} lang={lang} copy={copy} email={content.email} onClose={close} />
-      )}
-
-      {/* ====== РЕДАКТОР ПРОЕКТОВ (только когда тебя узнали) ====== */}
-      {isAdmin && editorOpen && (
-        <ProjectEditor
-          projects={projects}
-          setProjects={setProjects}
-          content={content}
-          setContent={setContent}
-          lang={lang}
-          onClose={() => setEditorOpen(false)}
-        />
-      )}
-    </div>
-  );
+function VpnVisual() {
+  return <div className="freeward-cover"><span className="freeward-cover__category">ЦИФРОВОЙ СЕРВИС</span><div className="freeward-cover__identity"><img src={asset('media/projects/freeward/logo.svg')} alt=""/><strong>Freeward VPN</strong></div><span className="freeward-cover__stack">Telegram · Web · Golang</span></div>;
 }
 
-// ---------------------------------------------------------------------------
-//  Доступ к редактору.
-//
-//  Первый раз — зайти по адресу сайта с  #секрет  (ADMIN_SECRET в settings.ts).
-//  Дальше браузер помнит тебя: кнопка в меню-шестерёнке или Ctrl+Shift+E.
-//  Выйти — открыть сайт с  #exit .
-//
-//  Вся проверка живёт в src/adminAccess.ts.
-// ---------------------------------------------------------------------------
-function useAdmin() {
-  // Проверяем адрес один раз при загрузке страницы.
-  const [access] = useState(() => checkAccessFromUrl());
-  const [isAdmin, setIsAdmin] = useState(access.unlocked);
-  const [editorOpen, setEditorOpen] = useState(access.openEditor);
+function ProjectVisual({ project, detail=false }: {project:Project;detail?:boolean}) {
+  const cover=coverOf(project);
+  if(project.id==='freeward')return <VpnVisual/>;
+  if(project.id==='earshot')return <div className="earshot-art"><div className="earshot-art__grain"/><div className="earshot-art__cross"/><span className="earshot-art__feed">CAM 04 / AUDIO INPUT</span><div className="earshot-art__wave">{Array.from({length:48},(_,i)=><i key={i} style={{height:`${12+Math.abs(Math.sin(i*1.3))*80}%`,animationDelay:`${i*-.11}s`}}/>)}</div><strong>EARSHOT</strong><span className="earshot-art__line">ТЫ ВИДИШЬ. ОН СЛЫШИТ.</span><small>Визуальная концепция · игра в разработке</small></div>;
+  return <><img src={asset(cover?.src??'')} alt={cover?.alt??project.title} loading={detail?'eager':'lazy'} width={cover?.width} height={cover?.height}/>{project.id==='piworld'&&<img className="project-logo" src={asset('media/projects/piworld/logo.webp')} alt=""/>}{project.id==='colosseum'&&<div className="colosseum-lockup"><span>ВЫЖИВИ НА АРЕНЕ</span><strong>COLOSSEUM</strong></div>}{project.id==='hookfold-bay'&&<span className="hookfold-label">Поймать момент.</span>}</>;
+}
 
-  useEffect(() => {
-    if (!isAdmin) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.shiftKey && (e.key === "E" || e.key === "e")) {
-        e.preventDefault();
-        setEditorOpen((v) => !v);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [isAdmin]);
+function ProjectCard({p,index}:{p:Project;index:number}) {
+  const ref=useRef<HTMLButtonElement>(null);
+  return <button ref={ref} className={`project-card project-card--${p.id}`} data-reveal style={{'--delay':`${index%2*.08}s`} as React.CSSProperties} onClick={()=>{ping();openProject(p.id);}} onPointerMove={e=>{if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const b=e.currentTarget.getBoundingClientRect();e.currentTarget.style.setProperty('--px',`${((e.clientX-b.left)/b.width-.5)*12}px`);e.currentTarget.style.setProperty('--py',`${((e.clientY-b.top)/b.height-.5)*12}px`);}} onPointerLeave={e=>{e.currentTarget.style.setProperty('--px','0px');e.currentTarget.style.setProperty('--py','0px');}}>
+    <div className="project-card__visual"><ProjectVisual project={p}/><span className="project-card__open">Посмотреть проект <Plus size={19}/></span></div>
+    <div className="project-card__info"><div><span className="project-card__genre">{p.genre}</span><h3>{p.title}</h3></div><span className="project-card__status">{p.status}</span></div><p className="project-card__summary">{p.tagline}</p>
+  </button>;
+}
 
-  // Если секретный адрес открыт в уже загруженной вкладке — реагируем сразу,
-  // без перезагрузки. Из-за этого «сработало один раз и перестало» не повторится.
-  useEffect(() => {
-    const onHash = () => {
-      const res = checkAccessFromUrl();
-      setIsAdmin(res.unlocked);
-      if (res.openEditor) setEditorOpen(true);
-      if (!res.unlocked) setEditorOpen(false);
-    };
-    window.addEventListener("hashchange", onHash);
-    return () => window.removeEventListener("hashchange", onHash);
-  }, []);
+function Case({id}:{id:string}) {
+  const project=getProject(id); const dialog=useRef<HTMLDialogElement>(null);const [activeImage,setActiveImage]=useState(0);
+  useEffect(()=>{const d=dialog.current;if(!d)return;d.showModal();document.body.classList.add('case-is-open');setActiveImage(0);return()=>{d.close();document.body.classList.remove('case-is-open');};},[id]);
+  const close=()=>openProject(null);
+  if(!project)return <dialog ref={dialog} className="case" onCancel={close}><button onClick={close}>Закрыть</button><h2>Проект не найден</h2></dialog>;
+  return <dialog ref={dialog} className={`case case--${project.id}`} onCancel={e=>{e.preventDefault();close();}} onClick={e=>{if(e.target===e.currentTarget)close();}} aria-label={project.title}>
+    <div className="case__sheet"><div className="case__nav"><a href="#contact" onClick={e=>{e.preventDefault();close();setTimeout(()=>document.getElementById('contact')?.scrollIntoView({behavior:'smooth'}),50);}}>Обсудить похожий проект</a><button onClick={close} className="icon-button" aria-label="Закрыть проект"><X/></button></div>
+      <div className="case__intro"><span className="eyebrow">{project.genre} · {project.year}</span><h2>{project.title}</h2><p>{project.tagline}</p><div className="case__facts"><span><small>Моя роль</small>{project.role}</span><span><small>Технологии</small>{project.engine}</span><span><small>Состояние</small>{project.status}</span></div></div>
+      <div className="case__cover"><ProjectVisual project={project} detail/></div>
+      <div className="case__story"><h3>Что за проект</h3><p>{project.overview}</p><div className="tag-list">{project.contribution.map(c=><span key={c}>{tagNames[c]??c}</span>)}</div></div>
+      {project.systems.length>0&&<div className="case__systems"><h3>За кадром — работающие системы.</h3>{project.systems.map(s=><article key={s.title}><h4>{s.title}</h4><p>{s.task}</p><p>{s.approach}</p><div><CheckCheck size={18}/><span>{s.result}</span></div></article>)}</div>}
 
-  return { isAdmin, editorOpen, setEditorOpen };
+      {project.media.length>1&&<section className="case__gallery"><h3>Посмотреть ближе.</h3><img className="case__gallery-main" src={asset(project.media[activeImage]?.src)} alt={project.media[activeImage]?.alt}/><p>{project.media[activeImage]?.alt}</p><div>{project.media.map((m,i)=><button key={m.src} aria-label={m.alt} aria-pressed={activeImage===i} onClick={()=>setActiveImage(i)}><img src={asset(m.thumb)} alt="" loading="lazy"/></button>)}</div></section>}
+      {project.links.length>0&&<div className="case__links">{project.links.map(l=><a key={l.url} className="button button--dark" href={l.url} target="_blank" rel="noopener noreferrer">{l.label}<ExternalLink size={17}/></a>)}</div>}
+      <div className="case__footer"><h3>Сделаем что-то своё?</h3><a className="button button--dark" href="https://t.me/katt_dev" target="_blank" rel="noopener noreferrer">Обсудить задачу</a><button className="text-button" onClick={close}>Вернуться к проектам</button></div>
+    </div>
+  </dialog>;
+}
+
+const services=[
+ {title:'Игра от идеи до билда',text:'Прототип, игровой цикл, прогрессия и подготовка к платформе. Для ПК, мобильных устройств и WebGL.',icon:Gamepad2,tags:['Unity','Godot','WebGL'],proof:'build-the-pyramid'},
+ {title:'Механики, которые чувствуются',text:'Боевая система, управление, поведение противников и мультиплеер. Работаю с ощущением игры, а не только с её логикой.',icon:MousePointer2,tags:['Gameplay','AI','Netcode'],proof:'colosseum'},
+ {title:'Продукты для людей и бизнеса',text:'Приложения, сайты, боты и автоматизация. Соединяю понятный интерфейс с серверной логикой, которая решает вашу задачу.',icon:Globe2,tags:['UI / UX','Golang','Telegram'],proof:'freeward'},
+ {title:'Серверная часть и автоматизация',text:'API, платежи, подписки, интеграции и внутренние инструменты. Помогаю превратить ручные процессы в работающую систему.',icon:Code2,tags:['Golang','Python','Backend'],proof:'freeward'},
+];
+
+export default function App(){
+ const route=useRoute(); const [filter,setFilter]=useState('Все проекты'),[menu,setMenu]=useState(false),[service,setService]=useState(0),[step,setStep]=useState(0),[copied,setCopied]=useState(false),[sent,setSent]=useState(false),[manual,setManual]=useState(false),[docked,setDocked]=useState(false);
+ const [brief,setBrief]=useState(''),[kind,setKind]=useState('Игра под ключ');
+ const list=projects.filter(p=>!p.id.toLowerCase().includes('doom')&&(filter==='Все проекты'||(filter==='Игры'?p.id!=='freeward':p.id==='freeward')));
+ useEffect(()=>{
+  document.documentElement.dataset.theme='light';document.documentElement.classList.add('redesigned');
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+  const observer=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('is-visible');observer.unobserve(e.target);}}),{threshold:.08});
+  const observe=()=>document.querySelectorAll('[data-reveal]:not(.is-visible)').forEach(e=>observer.observe(e));observe();
+  const hero=document.querySelector('.hero');
+  const dockObserver=new IntersectionObserver(([e])=>setDocked(!e.isIntersecting),{threshold:0});if(hero)dockObserver.observe(hero);
+  const mo=new MutationObserver(observe);mo.observe(document.getElementById('root')!,{childList:true,subtree:true});
+  if(!reduced.matches)gsap.fromTo('.intro-line',{y:80,opacity:0},{y:0,opacity:1,duration:1.3,ease:'power3.out',stagger:.12,delay:.12});
+  return()=>{observer.disconnect();mo.disconnect();dockObserver.disconnect();};
+ },[]);
+ const copyEmail=async()=>{try{await navigator.clipboard.writeText(site.email);setCopied(true);ping();setTimeout(()=>setCopied(false),2500);}catch{location.href=`mailto:${site.email}`;}};
+ const submit=(e:FormEvent)=>{e.preventDefault();const message=`Привет! Хочу обсудить проект.\n\nНаправление: ${kind}\n${brief}`;window.open(`https://t.me/katt_dev?text=${encodeURIComponent(message)}`,'_blank','noopener,noreferrer');setSent(true);};
+ return <>
+  <a className="skip-link" href="#main">К содержанию</a>
+  <header className="header"><a href="#" className="wordmark" aria-label="katt — на главную">katt<span className="wordmark__blob"/></a><nav className={menu?'is-open':''} aria-label="Основная навигация">{[['work','Проекты'],['expertise','Что я делаю'],['about','Обо мне']].map(([id,label])=><a key={id} href={`#${id}`} onClick={()=>setMenu(false)}>{label}</a>)}</nav><a className="header__contact" href="#contact">Обсудить проект<span/></a><button className="menu-toggle icon-button" aria-label={menu?'Закрыть меню':'Открыть меню'} aria-expanded={menu} onClick={()=>setMenu(!menu)}>{menu?<X/>:<Menu/>}</button></header>
+  <main id="main">
+   <section className="hero wrap"><div className="hero__copy"><span className="eyebrow intro-line">Разработчик цифровых продуктов</span><h1><span className="intro-line">Любая идея</span><span className="intro-line">может стать</span><span className="hero__outline intro-line">продуктом<span className="hero__period">.</span></span></h1><p className="hero__lead intro-line">Создаю игры, приложения и сервисы для людей<br className="desktop-break"/> и бизнеса. Нейросети ускоряют разработку.<br className="desktop-break"/> За решения, код и результат отвечаю я.</p><div className="hero__actions intro-line"><a className="button button--dark" href="#contact" onMouseEnter={ping}>Обсудить вашу идею</a><a className="button button--plain" href="#work">Смотреть работы<span className="down-line"/></a></div><div className="hero__availability intro-line"><span className="availability-dot"/>{site.availableLabel}<span className="hero__name">katt / independent developer</span></div></div><div className="hero__stage"><Mascot/><div className="hero__stage-footer"><span>Эстетика — в деталях.<br/>Логика — в каждом действии.</span><span className="hero__cross">✳</span></div></div></section>
+   <div className="craft-strip wrap"><span>От механики<br/>до целого продукта</span><div>Unity <i/> C# <i/> Golang <i/> Python <i/> UI / UX</div><Code2 size={26}/></div>
+   <section id="work" className="work wrap section-space"><div className="section-head" data-reveal><div><span className="eyebrow">Идеи, воплощённые в коде</span><h2>Проекты в деталях<span>.</span></h2></div><p>У каждого проекта своя задача,<br/>свой мир и своё решение.</p></div><div className="filters" role="group" aria-label="Фильтр проектов">{['Все проекты','Игры','Сервисы'].map(f=><button key={f} aria-pressed={filter===f} onClick={()=>{setFilter(f);ping();}}>{f}{filter===f&&<span>{list.length}</span>}</button>)}</div><div className="project-grid">{list.map((p,i)=><ProjectCard key={p.id} p={p} index={i}/>)}</div></section>
+   <section id="expertise" className="expertise section-space"><div className="wrap"><div className="section-head" data-reveal><div><span className="eyebrow">От вашей задачи — к конкретному результату</span><h2>Что можем сделать.</h2></div><p>Подключаюсь к команде<br/>или беру разработку целиком.</p></div><div className="expertise__layout"><div className="service-tabs">{services.map((s,i)=><button className={service===i?'is-active':''} key={s.title} onClick={()=>{setService(i);ping();}} aria-expanded={service===i}><s.icon size={24}/><span>{s.title}</span><Plus size={20}/></button>)}</div><article key={service} className="service-detail"><div className="service-detail__icon">{(()=>{const Icon=services[service].icon;return <Icon size={44}/>;})()}</div><h3>{services[service].title}</h3><p>{services[service].text}</p><div className="tag-list">{services[service].tags.map(t=><span key={t}>{t}</span>)}</div><button className="text-button" onClick={()=>openProject(services[service].proof)}>Посмотреть на примере проекта <Plus size={18}/></button></article></div></div></section>
+   <section id="about" className="about wrap section-space"><div className="about__portrait" data-reveal><Mascot compact/><span>От первого замысла<br/>до последней детали.</span></div><div className="about__copy" data-reveal><span className="eyebrow">Привет. Я katt.</span><h2>Технологии — инструмент.<br/>Результат — моя работа.</h2><p>Я разрабатываю цифровые продукты: от игровых миров до приложений и систем для бизнеса. Пишу на C#, Golang и Python, работаю с Unity и Godot. Мне важно, чтобы продукт был понятным в использовании и удобным в дальнейшем развитии.</p><p>В Piworld занимаюсь игровыми системами и сетью. В Colosseum — боёвкой и поведением персонажа. А Freeward VPN показывает, как тот же подход работает за пределами игр.</p><div className="about__facts"><span>Unity · Godot 4<small>Движки</small></span><span>C# · Golang · Python<small>Код и системы</small></span><span>Ahaha Studio<small>Игровые проекты</small></span></div></div></section>
+   <section className="ai-approach wrap section-space" data-reveal><div className="ai-approach__copy"><span className="eyebrow">Моё главное преимущество — скорость разработки</span><h2>Быстрее к результату.<br/>С пониманием каждой детали.</h2><p>Использую нейросети, чтобы быстрее проверять идеи и собирать рабочие решения. Архитектуру, поведение и качество кода контролирую сам.</p><h3>Не вайбкодер. Разработчик.</h3><p>Могу написать код самостоятельно, объяснить сгенерированное решение и изменить его под вашу задачу. Если принципиально важно — работаю без генерации кода. Требования к результату остаются одинаковыми. Меняются инструмент и сроки.</p></div><div className="build-mode"><span className="eyebrow">Вы выбираете подход</span><div className="build-mode__switch" role="group" aria-label="Подход к разработке"><button aria-pressed={!manual} onClick={()=>{setManual(false);ping();}}>С инструментами ИИ</button><button aria-pressed={manual} onClick={()=>{setManual(true);ping();}}>Полностью вручную</button></div><div className="build-mode__visual" key={String(manual)}><div className="build-mode__orbit"/><div className="build-mode__core"><Code2 size={38}/></div><span className="build-mode__token token-a">{manual?'Код':'Идея'}</span><span className="build-mode__token token-b">{manual?'Проверка':'ИИ + разработчик'}</span><span className="build-mode__token token-c">Результат</span></div><h3>{manual?'Больше времени на реализацию.':'Меньше рутины. Быстрее итерации.'}</h3><p>{manual?'Пишу код самостоятельно, с теми же критериями приёмки. Сроки обсуждаем с учётом задачи.':'Ускоряю реализацию с помощью нейросетей. Каждое решение проходит мой разбор и проверку.'}</p><ul>{['Функциональность по вашей задаче','Проверка результата','Код, который могу объяснить','Передача исходников'].map(t=><li key={t}><Check size={16}/>{t}</li>)}</ul></div></section>
+   <section className="process wrap section-space"><div className="section-head" data-reveal><div><span className="eyebrow">Работа без тумана</span><h2>Всегда понятно,<br/>что происходит.</h2></div><p>Показываю промежуточный результат.<br/>Обсуждаем решения до финальной сдачи.</p></div><div className="process__steps">{[{title:'Разбираемся в задаче',text:'Обсуждаем идею, платформу, ограничения и нужный результат. Фиксируем объём и критерии готовности.'},{title:'Проверяем вживую',text:'Собираю прототип. Вместо догадок смотрим, как работают механика, интерфейс и основной сценарий.'},{title:'Собираем и доводим',text:'Разработка, проверка поведения и работа с деталями. Вы видите прогресс и можете дать обратную связь.'},{title:'Передаём результат',text:'Рабочая сборка, исходники и пояснения по проекту. Обсуждаем дальнейшее развитие.'}].map((s,i)=><button key={s.title} aria-expanded={step===i} className={step===i?'is-active':''} onClick={()=>{setStep(i);ping();}}><span className="process__shape"/><h3>{s.title}</h3><p>{s.text}</p><Plus size={20}/></button>)}</div></section>
+   <section id="contact" className="contact section-space"><div className="wrap contact__layout"><div data-reveal><span className="eyebrow">Хорошие проекты начинаются с разговора</span><h2>Что сделаем<br/>вместе<span>?</span></h2><p>Можно прийти с готовым ТЗ.<br/>Можно — с идеей на салфетке.</p><a className="contact__telegram" href="https://t.me/katt_dev" target="_blank" rel="noopener noreferrer">Написать в Telegram<ExternalLink size={22}/></a><button className="contact__email" onClick={copyEmail}>{site.email}{copied?<Check size={17}/>:<Copy size={17}/>}</button><span className="contact__notice" role="status">{copied?'Почта скопирована':site.responseTime}</span></div><form onSubmit={submit} onFocus={ping} className="brief-form"><h3>Пара слов о вашей идее</h3><label htmlFor="kind">Что нужно сделать?</label><select id="kind" value={kind} onChange={e=>setKind(e.target.value)}><option>Игра под ключ</option><option>Приложение для бизнеса</option><option>Сайт или веб-сервис</option><option>Бот и автоматизация</option><option>Механики и игровые системы</option><option>Интерфейс, бот или сервис</option><option>Пока хочу обсудить</option></select><label htmlFor="brief">Расскажите о задаче</label><textarea id="brief" value={brief} onChange={e=>setBrief(e.target.value)} required minLength={10} maxLength={2000} placeholder="Что хотите создать, для кого и к какому сроку?"/><button className="button button--dark" type="submit">Продолжить в Telegram</button><p role="status">{sent?'Открылся Telegram. Проверьте подготовленный текст и отправьте сообщение.':'Подготовлю текст сообщения. Вы отправите его сами в Telegram.'}</p></form></div></section>
+  </main>
+  <footer className="footer wrap"><a href="#" className="wordmark">katt<span className="wordmark__blob"/></a><span>Идея. Реализация. Результат.</span><span>© {new Date().getFullYear()} katt</span><a href="#main">Наверх</a></footer>
+  {docked&&!route&&<aside className="mascot-dock" aria-label="Субстанция"><Mascot compact/></aside>}
+  {route&&<Case id={route}/>}
+ </>;
 }

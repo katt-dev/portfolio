@@ -1,0 +1,524 @@
+[
+  {
+    "id": "piworld",
+    "hidden": false,
+    "featured": true,
+    "demo": false,
+    "title": "Piworld",
+    "genre": "MMO-выживание · 2D top-down",
+    "status": "В Steam",
+    "year": "2025–2026",
+    "engine": "Unity · C#",
+    "platform": "PC · Steam",
+    "role": "Разработчик игровых систем",
+    "tagline": "Многопользовательская выживалка: биомы, добыча, кузница, стройка баз, NPC и PvP.",
+    "overview": "Piworld — открытый мир, который живёт, пока в нём есть игроки. Ресурсы добываются и восстанавливаются, базы строятся из десятков блоков, а PvP и PvE перетекают друг в друга. Игра вышла в Steam и продолжает развиваться вместе с сообществом.",
+    "contribution": [
+      "Gameplay Programming",
+      "Netcode",
+      "UI",
+      "Systems Design"
+    ],
+    "technologies": [
+      "Unity",
+      "C#",
+      "Mirror",
+      "Steamworks"
+    ],
+    "systems": [
+      {
+        "title": "Предсказание на клиенте",
+        "task": "Удары и броски должны ощущаться мгновенными даже при задержке до сервера.",
+        "approach": "Клиент-владелец предсказывает взмахи и броски, а сервер подтверждает их. Сверка состояний учитывает метку времени и допуск по шагам.",
+        "result": "Убрал дрожание при сверке (oscillation) и рассинхрон часов предсказания."
+      },
+      {
+        "title": "Серверный шаг в тиках",
+        "task": "Сервер и клиенты должны одинаково считать время симуляции.",
+        "approach": "Шаг сервера считается в тиках, а не в шагах физики, поэтому логика не зависит от частоты физики.",
+        "result": "Детерминированная основа для предсказания и реплей-проверок."
+      },
+      {
+        "title": "Живой мир",
+        "task": "Мир не должен пустеть, когда игроки его вычищают, и не должен переполняться.",
+        "approach": "Ресурсы восстанавливаются с той скоростью, с которой игроки их добывают. Карта помнит декорации, которые сервер перестал стримить.",
+        "result": "Мир остаётся наполненным при любом онлайне."
+      },
+      {
+        "title": "Экономика и события",
+        "task": "Дать игрокам причины возвращаться.",
+        "approach": "Ограниченные по времени Steam-дропы с редкостью, тотемы и рейды с длительностью, рынок.",
+        "result": "Системы удержания, связанные со Steam-инвентарём."
+      }
+    ],
+    "media": [
+      {
+        "src": "media/projects/piworld/shot-01.webp",
+        "thumb": "media/projects/piworld/shot-01.thumb.webp",
+        "width": 1600,
+        "height": 900,
+        "kind": "screenshot",
+        "alt": "Зимний биом: база игрока из деревянных стен и печей"
+      },
+      {
+        "src": "media/projects/piworld/shot-02.webp",
+        "thumb": "media/projects/piworld/shot-02.thumb.webp",
+        "width": 1600,
+        "height": 900,
+        "kind": "screenshot",
+        "alt": "Лесной биом: игроки добывают камень у статуй"
+      },
+      {
+        "src": "media/projects/piworld/shot-03.webp",
+        "thumb": "media/projects/piworld/shot-03.thumb.webp",
+        "width": 1600,
+        "height": 900,
+        "kind": "screenshot",
+        "alt": "Пустынный биом с кристаллами и кактусами"
+      },
+      {
+        "src": "media/projects/piworld/logo.webp",
+        "thumb": "media/projects/piworld/logo.thumb.webp",
+        "width": 1280,
+        "height": 720,
+        "kind": "art",
+        "alt": "Логотип Piworld"
+      }
+    ],
+    "cover": 0,
+    "team": [
+      {
+        "name": "Kippen",
+        "role": "Гейм-дизайнер"
+      },
+      {
+        "name": "Santiago",
+        "role": "Сервер"
+      },
+      {
+        "name": "Serkov1ch",
+        "role": "Тимлид"
+      }
+    ],
+    "studio": "Ahaha Studio",
+    "links": [
+      {
+        "label": "Страница в Steam",
+        "url": "https://store.steampowered.com/app/3167710/Piworld/"
+      }
+    ],
+    "wall": "cartography",
+    "devNote": "Самый неприятный баг — сверка предсказания, которая раскачивала персонажа туда-обратно. Лечилось не формулой, а честным временем: метка часов и допуск по шагам."
+  },
+  {
+    "id": "colosseum",
+    "hidden": false,
+    "featured": true,
+    "demo": false,
+    "title": "Colosseum",
+    "genre": "Top-down экшен · Арена",
+    "status": "В разработке",
+    "year": "2026",
+    "engine": "Unity 6 · URP",
+    "platform": "PC",
+    "role": "Разработчик",
+    "tagline": "Космодесантник-Примарис против орочьей орды на древней арене во вселенной Warhammer 40,000.",
+    "overview": "Аренный экшен с видом сверху. Волны врагов сменяются выбором благословений, а в конце ждёт босс — Варбосс Клоргард Да Круль. Модели в выставочном зале взяты прямо из игры.",
+    "contribution": [
+      "Gameplay Programming",
+      "AI",
+      "Combat",
+      "UI"
+    ],
+    "technologies": [
+      "Unity 6",
+      "C#",
+      "URP",
+      "Data-driven rules"
+    ],
+    "systems": [
+      {
+        "title": "Боевая система",
+        "task": "Ближний и дальний бой против десятков орков одновременно.",
+        "approach": "Отдельная боевая система с настраиваемыми через данные правилами и слоями физики под игрока, врагов и снаряды.",
+        "result": "Волны врагов, подсветка целей и маршрут к выходу с арены."
+      },
+      {
+        "title": "Благословения между волнами",
+        "task": "Дать игроку выбор и прогрессию внутри забега.",
+        "approach": "Экран выбора из трёх карт-благословений, эффекты задаются данными.",
+        "result": "Каждый забег собирается немного по-разному."
+      },
+      {
+        "title": "Контроллер и анимация",
+        "task": "Тяжёлый, но отзывчивый десантник.",
+        "approach": "Контроллер персонажа с анимационной схемой под вид сверху.",
+        "result": "Персонаж ощущается массивным и не теряет точность управления."
+      }
+    ],
+    "media": [
+      {
+        "src": "media/projects/colosseum/shot-01.webp",
+        "thumb": "media/projects/colosseum/shot-01.thumb.webp",
+        "width": 1920,
+        "height": 1080,
+        "kind": "screenshot",
+        "alt": "Бой у энергетического барьера, орки подсвечены красным"
+      },
+      {
+        "src": "media/projects/colosseum/shot-02.webp",
+        "thumb": "media/projects/colosseum/shot-02.thumb.webp",
+        "width": 1920,
+        "height": 1080,
+        "kind": "screenshot",
+        "alt": "Схватка с Варбоссом Клоргардом Да Крулем"
+      },
+      {
+        "src": "media/projects/colosseum/shot-03.webp",
+        "thumb": "media/projects/colosseum/shot-03.thumb.webp",
+        "width": 1920,
+        "height": 1080,
+        "kind": "screenshot",
+        "alt": "Орда орков окружает десантника"
+      },
+      {
+        "src": "media/projects/colosseum/shot-04.webp",
+        "thumb": "media/projects/colosseum/shot-04.thumb.webp",
+        "width": 1920,
+        "height": 1080,
+        "kind": "screenshot",
+        "alt": "Выход с арены, отмеченный шевронами"
+      },
+      {
+        "src": "media/projects/colosseum/shot-05.webp",
+        "thumb": "media/projects/colosseum/shot-05.thumb.webp",
+        "width": 1920,
+        "height": 1080,
+        "kind": "screenshot",
+        "alt": "Высадка десантника в начале забега"
+      },
+      {
+        "src": "media/projects/colosseum/shot-06.webp",
+        "thumb": "media/projects/colosseum/shot-06.thumb.webp",
+        "width": 1920,
+        "height": 1080,
+        "kind": "screenshot",
+        "alt": "Экран выбора благословения"
+      }
+    ],
+    "cover": 0,
+    "team": [],
+    "studio": "",
+    "links": [],
+    "wall": "gothic",
+    "devNote": "Варбосс Клоргард Да Круль весит 3,6 МБ — и это одна модель. На странице проекта его можно покрутить и послушать боевой клич.",
+    "models": [
+      {
+        "src": "models/colosseum/warboss.glb",
+        "label": "Варбосс Клоргард Да Круль",
+        "idle": "Move_Idle1",
+        "action": "Battlecry",
+        "actionLabel": "Боевой клич",
+        "note": "Босс арены — модель прямо из игры, с её же анимациями."
+      },
+      {
+        "src": "models/colosseum/primaris.glb",
+        "label": "Космодесантник-Примарис",
+        "idle": "RAI",
+        "action": "RDash",
+        "actionLabel": "Рывок"
+      },
+      {
+        "src": "models/colosseum/droppod.glb",
+        "label": "Десантная капсула",
+        "idle": "Idle-loop",
+        "action": "Open_Base",
+        "actionLabel": "Открыть капсулу"
+      }
+    ]
+  },
+  {
+    "id": "freeward",
+    "hidden": false,
+    "featured": true,
+    "demo": false,
+    "title": "Freeward VPN",
+    "genre": "Цифровой сервис · Telegram и Web",
+    "status": "Работающий сервис",
+    "year": "2026",
+    "engine": "Go · Telegram API · Xray",
+    "platform": "Telegram · Web",
+    "role": "Разработчик сервиса",
+    "tagline": "Подписка, оплата, устройства и сеть серверов — в одном понятном сценарии.",
+    "overview": "Freeward VPN — самостоятельный сервис с Telegram-ботом и веб-интерфейсом. Пользователь получает доступ, управляет устройствами и продлевает подписку без ручной выдачи ключей. Под капотом — серверная часть на Go, интеграция оплаты, конфигурации подключения и мониторинг инфраструктуры. Собственное клиентское приложение развивается отдельно.",
+    "contribution": [
+      "UI",
+      "Backend",
+      "Telegram Bot",
+      "Infrastructure"
+    ],
+    "technologies": [
+      "Go",
+      "Telegram Bot API",
+      "JavaScript",
+      "Xray",
+      "Linux"
+    ],
+    "systems": [
+      {
+        "title": "Подписка без ручной выдачи",
+        "task": "Связать оплату, срок доступа и устройства пользователя.",
+        "approach": "Бот проверяет подтверждение оплаты, продлевает срок и выдаёт отдельные ссылки подключения для устройств.",
+        "result": "Основной сценарий проходит автоматически, от оплаты до получения доступа."
+      },
+      {
+        "title": "Маршруты с резервированием",
+        "task": "Сохранять альтернативные пути подключения и выбирать маршрут по отклику.",
+        "approach": "Профили содержат несколько маршрутов через входные узлы, а клиент проверяет доступность и задержку.",
+        "result": "Автовыбор и резервирование в совместимых клиентах."
+      },
+      {
+        "title": "Понятное управление",
+        "task": "Помочь пользователю разобраться с подпиской и доступом.",
+        "approach": "Карточки устройств, инструкции по платформам, локализация и разделение действий с устройствами.",
+        "result": "Ключи, статус и управление находятся в соответствующем разделе."
+      }
+    ],
+    "media": [],
+    "cover": -1,
+    "team": [],
+    "studio": "",
+    "links": [
+      {
+        "label": "Открыть Telegram-бота",
+        "url": "https://t.me/FreewardVPN_Bot"
+      }
+    ],
+    "wall": "chrome",
+    "devNote": "Показанный интерфейс — визуализация сервиса; клиентские приложения для подключения сторонние."
+  },
+  {
+    "id": "earshot",
+    "hidden": false,
+    "featured": false,
+    "demo": false,
+    "title": "EARSHOT",
+    "genre": "Кооп-хоррор на четверых",
+    "status": "Ранняя разработка",
+    "year": "2026",
+    "engine": "Unity 6 · URP",
+    "platform": "PC · Steam",
+    "role": "Разработчик",
+    "tagline": "Ты видишь монстра. Но он слышит только тебя.",
+    "overview": "Трое заходят в мёртвое промышленное здание с фонарями. Четвёртый остаётся в фургоне у пульта: десять мониторов, старые камеры и микрофон. Он видит тварь, но предупредить может только через громкоговорители на стенах. Их слышат все, тварь тоже. Сейчас в игре работают системы и сеть, а модели пока заменены заглушками.",
+    "contribution": [
+      "Gameplay Programming",
+      "AI",
+      "Audio Systems",
+      "Netcode"
+    ],
+    "technologies": [
+      "Unity 6",
+      "C#",
+      "Netcode for GameObjects",
+      "Steam",
+      "Speech recognition"
+    ],
+    "systems": [
+      {
+        "title": "Слух твари",
+        "task": "Монстр должен реагировать на звук, а не на видимость.",
+        "approach": "Тварь со слухом идёт на самый громкий звук, который слышала последним. Громкоговорители глушатся стенами.",
+        "result": "Каждое слово диспетчера одновременно спасает бригаду и наводит на неё тварь."
+      },
+      {
+        "title": "Монстры и навигация",
+        "task": "Разные угрозы для разных ситуаций.",
+        "approach": "Пять видов монстров со своей навигацией и активностью.",
+        "result": "Поведение тварей предсказуемо, ошибаются люди."
+      },
+      {
+        "title": "Голос как механика",
+        "task": "Речь игрока — ресурс, а не чат.",
+        "approach": "Распознавание речи, секторы уровня и обратная связь при ранении.",
+        "result": "Чем дольше открыт эфир, тем ближе тварь."
+      }
+    ],
+    "media": [],
+    "cover": -1,
+    "team": [],
+    "studio": "",
+    "links": [],
+    "wall": "concrete",
+    "devNote": "Правило дизайна, которое держит всю игру: тварь не хитрая. Она идёт на самый громкий звук, который слышала последним, — всегда."
+  },
+  {
+    "id": "build-the-pyramid",
+    "hidden": false,
+    "featured": false,
+    "demo": false,
+    "title": "Build the Pyramid!",
+    "genre": "Симулятор · Кликер",
+    "status": "Коммерческий заказ",
+    "year": "2026",
+    "engine": "Unity 2022.3 LTS",
+    "platform": "Яндекс Игры · WebGL · ПК и телефоны",
+    "role": "Разработчик",
+    "tagline": "Качайся в спортзале, таскай блоки и строй общую пирамиду вместе с ботами.",
+    "overview": "Заказ под Яндекс Игры в духе Roblox-симуляторов. Игрок качает скорость на беговой дорожке и силу на штанге, носит блоки к стройке и получает монеты за каждый поставленный блок. Достроенная пирамида открывает новые залы с бо́льшим множителем.",
+    "contribution": [
+      "Gameplay Programming",
+      "UI",
+      "Platform Integration",
+      "Tools"
+    ],
+    "technologies": [
+      "Unity 2022.3",
+      "C#",
+      "WebGL",
+      "Yandex Games SDK",
+      "Built-in RP"
+    ],
+    "systems": [
+      {
+        "title": "Шаблон SimKit",
+        "task": "Код должны продолжать разработчики заказчика.",
+        "approach": "Игра собрана из переиспользуемого шаблона для Roblox-подобных симуляторов. Читаемый код, английские имена, XML-документация на публичном API.",
+        "result": "Проект передаётся вместе с исходниками без платных ассетов."
+      },
+      {
+        "title": "Платформа через интерфейс",
+        "task": "Не привязывать игру к SDK площадки.",
+        "approach": "Вся работа с площадкой идёт через собственный IPlatform. Для билда есть реализация поверх PluginYG2, для редактора и тестов — офлайн-версия.",
+        "result": "Игра тестируется без площадки и переносится на другие."
+      },
+      {
+        "title": "Цикл прогрессии",
+        "task": "Простой и затягивающий цикл.",
+        "approach": "Скорость → темп, сила → вместимость. Блоки превращаются в монеты, пирамиды открывают новые залы. Есть боты, лидерборды и ранги.",
+        "result": "Цикл, понятный за секунды, на ПК и телефонах, на русском и английском."
+      }
+    ],
+    "media": [
+      {
+        "src": "media/projects/build-the-pyramid/shot-01.webp",
+        "thumb": "media/projects/build-the-pyramid/shot-01.thumb.webp",
+        "width": 1920,
+        "height": 1080,
+        "kind": "screenshot",
+        "alt": "Карта пустыни: игрок у стройки пирамиды"
+      },
+      {
+        "src": "media/projects/build-the-pyramid/shot-02.webp",
+        "thumb": "media/projects/build-the-pyramid/shot-02.thumb.webp",
+        "width": 1920,
+        "height": 1080,
+        "kind": "screenshot",
+        "alt": "Персонаж и HUD с характеристиками"
+      },
+      {
+        "src": "media/projects/build-the-pyramid/shot-03.webp",
+        "thumb": "media/projects/build-the-pyramid/shot-03.thumb.webp",
+        "width": 1600,
+        "height": 900,
+        "kind": "screenshot",
+        "alt": "Прогресс строительства пирамиды"
+      },
+      {
+        "src": "media/projects/build-the-pyramid/shot-04.webp",
+        "thumb": "media/projects/build-the-pyramid/shot-04.thumb.webp",
+        "width": 1920,
+        "height": 1080,
+        "kind": "screenshot",
+        "alt": "Тренажёры и закат над пустыней"
+      }
+    ],
+    "cover": 0,
+    "team": [],
+    "studio": "",
+    "links": [],
+    "wall": "sandstone",
+    "devNote": "Название игры в загрузчике должно совпадать с черновиком Яндекса символ в символ — однажды за это уже прилетел отказ модерации."
+  },
+  {
+    "id": "hookfold-bay",
+    "hidden": false,
+    "featured": false,
+    "demo": false,
+    "title": "Hookfold Bay",
+    "genre": "Мобильная рыбалка · 2D",
+    "status": "Прототип",
+    "year": "2026",
+    "engine": "Unity 6 · URP",
+    "platform": "Mobile",
+    "role": "Разработчик",
+    "tagline": "Мобильная 2D-рыбалка: крючок, рыба, мусор на дне и прокачка улова.",
+    "overview": "Мобильная игра про рыбалку по техническому заданию. Игрок опускает крючок в залив, ловит рыбу, обходит мусор и прокачивает снасти между уровнями.",
+    "contribution": [
+      "Gameplay Programming",
+      "UI",
+      "Prototyping"
+    ],
+    "technologies": [
+      "Unity 6",
+      "C#",
+      "URP 2D",
+      "ScriptableObjects",
+      "Input System"
+    ],
+    "systems": [
+      {
+        "title": "Данные вместо кода",
+        "task": "Рыба, мусор и уровни должны настраиваться без программиста.",
+        "approach": "Контент описан ScriptableObject-ассетами, а генератор собирает их из таблицы.",
+        "result": "Баланс правится в редакторе."
+      },
+      {
+        "title": "Геймплей уровня",
+        "task": "Крючок, рыба, мусор, спавн и камера в одном понятном цикле.",
+        "approach": "Отдельный LevelController отвечает за правила уровня, геймплейные сущности общаются через событийные контракты.",
+        "result": "Уровень проверяется по чек-листу технического задания."
+      }
+    ],
+    "media": [
+      {
+        "src": "media/projects/hookfold-bay/key-art-wide.webp",
+        "thumb": "media/projects/hookfold-bay/key-art-wide.thumb.webp",
+        "width": 941,
+        "height": 583,
+        "kind": "art",
+        "alt": "Ключевой арт: рыбак в лодке над заливом"
+      },
+      {
+        "src": "media/projects/hookfold-bay/key-art.webp",
+        "thumb": "media/projects/hookfold-bay/key-art.thumb.webp",
+        "width": 941,
+        "height": 1672,
+        "kind": "art",
+        "alt": "Ключевой арт целиком: залив, рыба и крючок"
+      },
+      {
+        "src": "media/projects/hookfold-bay/ocean.webp",
+        "thumb": "media/projects/hookfold-bay/ocean.thumb.webp",
+        "width": 1672,
+        "height": 941,
+        "kind": "art",
+        "alt": "Фон локации: поверхность залива"
+      },
+      {
+        "src": "media/projects/hookfold-bay/fisherman.webp",
+        "thumb": "media/projects/hookfold-bay/fisherman.thumb.webp",
+        "width": 1672,
+        "height": 941,
+        "kind": "art",
+        "alt": "Спрайт героя: рыбак в лодке"
+      }
+    ],
+    "cover": 0,
+    "team": [],
+    "studio": "",
+    "links": [],
+    "wall": "sonar",
+    "devNote": "Весь проект разбит на двенадцать задач с жёсткими контрактами имён — чтобы каждую можно было сделать отдельно, не читая остальной код."
+  }
+]
