@@ -59,7 +59,7 @@ const services=[
 ];
 
 export default function App(){
- const route=useRoute(); const [filter,setFilter]=useState('Все проекты'),[menu,setMenu]=useState(false),[service,setService]=useState(0),[step,setStep]=useState(0),[copied,setCopied]=useState(false),[manual,setManual]=useState(false),[docked,setDocked]=useState(false);
+ const route=useRoute(); const [filter,setFilter]=useState('Все проекты'),[menu,setMenu]=useState(false),[service,setService]=useState(0),[step,setStep]=useState(0),[copied,setCopied]=useState(false),[manual,setManual]=useState(false);
 
  const filterRef=useRef<HTMLDivElement>(null);const [filterInk,setFilterInk]=useState({left:0,width:0});
  useEffect(()=>{const root=filterRef.current;if(!root)return;const update=()=>{const selected=root.querySelector<HTMLElement>('[aria-pressed=true]');if(selected)setFilterInk({left:selected.offsetLeft,width:selected.offsetWidth});};const resize=new ResizeObserver(update);resize.observe(root);update();return()=>resize.disconnect();},[filter]);
@@ -69,11 +69,9 @@ export default function App(){
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
   const observer=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('is-visible');observer.unobserve(e.target);}}),{threshold:.08});
   const observe=()=>document.querySelectorAll('[data-reveal]:not(.is-visible)').forEach(e=>observer.observe(e));observe();
-  const hero=document.querySelector('.hero');
-  const dockObserver=new IntersectionObserver(([e])=>setDocked(!e.isIntersecting),{threshold:0});if(hero)dockObserver.observe(hero);
   const mo=new MutationObserver(observe);mo.observe(document.getElementById('root')!,{childList:true,subtree:true});
   if(!reduced.matches)gsap.fromTo('.intro-line',{y:35,opacity:0,clipPath:'ellipse(20% 0% at 20% 100%)'},{y:0,opacity:1,clipPath:'ellipse(150% 180% at 50% 80%)',duration:1.65,ease:'expo.out',stagger:.13,delay:.1});
-  return()=>{observer.disconnect();mo.disconnect();dockObserver.disconnect();};
+  return()=>{observer.disconnect();mo.disconnect();};
  },[]);
  const copyEmail=async()=>{try{await navigator.clipboard.writeText(site.email);setCopied(true);window.dispatchEvent(new CustomEvent('fluid:notice',{detail:'Почта скопирована'}));ping();setTimeout(()=>setCopied(false),2500);}catch{location.href=`mailto:${site.email}`;}};
  return <>
@@ -90,7 +88,7 @@ export default function App(){
    <section id="contact" className="contact section-space"><div className="wrap contact__layout"><div data-reveal><span className="eyebrow">Хорошие проекты начинаются с разговора</span><h2>Превратим идею<br/>в продукт<span>.</span></h2><p>Опишите задачу своими словами.<br/>Помогу определить функции и первый шаг.</p><a className="contact__telegram" href="https://t.me/katt_dev" target="_blank" rel="noopener noreferrer">Написать в Telegram<ExternalLink size={22}/></a><button className="contact__email" onClick={copyEmail}>{site.email}{copied?<Check size={17}/>:<Copy size={17}/>}</button><span className="contact__notice" role="status">{copied?'Почта скопирована':site.responseTime}</span></div><BriefWizard/></div></section>
   </main>
   <footer className="footer wrap"><a href="#" className="wordmark"><BrandMark/>katt</a><span>Идея. Реализация. Результат.</span><span>© {new Date().getFullYear()} katt</span><a href="#main">Наверх</a></footer>
-  {docked&&!route&&<span className="page-depth" aria-hidden="true"/>}<FluidInterface/>
+  <FluidInterface/>
   {route&&<Case id={route}/>}
  </>;
 }

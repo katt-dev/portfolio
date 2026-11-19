@@ -1,5 +1,5 @@
 ﻿import { useEffect, useRef, useState } from 'react';
-import { Check, ChevronDown, X, Copy, Send } from 'lucide-react';
+import { Check, ChevronDown, X } from 'lucide-react';
 import Lenis from 'lenis';
 import { flushSync } from 'react-dom';
 
@@ -28,7 +28,7 @@ export function FluidDetails({title,children}:{title:string;children:React.React
 }
 
 export function FluidInterface(){
- const [progress,setProgress]=useState(0),[contact,setContact]=useState(false),[notice,setNotice]=useState('');const rail=useRef<HTMLDivElement>(null);const scroller=useRef<HTMLElement|null>(null);
+ const [progress,setProgress]=useState(0),[notice,setNotice]=useState('');const rail=useRef<HTMLDivElement>(null);const scroller=useRef<HTMLElement|null>(null);
  useEffect(()=>{
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');let lenis:Lenis|undefined;
   const create=()=>{lenis?.destroy();lenis=undefined;if(!reduced.matches)lenis=new Lenis({autoRaf:true,lerp:.09,smoothWheel:true,anchors:{offset:-35},prevent:node=>!!node.closest('.case,.fluid-select__options,[data-lenis-prevent]')});};create();reduced.addEventListener('change',create);
@@ -42,7 +42,6 @@ export function FluidInterface(){
  useEffect(()=>{if(!notice)return;const t=setTimeout(()=>setNotice(''),3500);return()=>clearTimeout(t);},[notice]);
  const seek=(y:number)=>{const box=rail.current?.getBoundingClientRect(),el=scroller.current;if(!box||!el)return;const n=Math.max(0,Math.min(1,(y-box.top)/box.height));el.scrollTo({top:n*(el.scrollHeight-el.clientHeight),behavior:'instant'});};
  return <><svg width="0" height="0" className="fluid-defs" aria-hidden="true"><defs><filter id="ink-goo" x="-30%" y="-60%" width="160%" height="220%" colorInterpolationFilters="sRGB"><feGaussianBlur in="SourceGraphic" stdDeviation="5"/><feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -9"/></filter></defs></svg><div ref={rail} className="fluid-scroll" role="scrollbar" tabIndex={0} aria-label="Прокрутка страницы" aria-controls="root" aria-valuenow={Math.round(progress*100)} aria-valuemin={0} aria-valuemax={100} aria-orientation="vertical" onKeyDown={e=>{const el=scroller.current;if(!el)return;if(['ArrowUp','ArrowDown','PageUp','PageDown','Home','End'].includes(e.key)){e.preventDefault();el.scrollBy({top:e.key==='Home'?-el.scrollHeight:e.key==='End'?el.scrollHeight:(e.key.includes('Up')?-1:1)*(e.key.startsWith('Page')?innerHeight*.8:80),behavior:'smooth'});}}} onPointerDown={e=>{e.currentTarget.setPointerCapture(e.pointerId);seek(e.clientY);}} onPointerMove={e=>{if(e.currentTarget.hasPointerCapture(e.pointerId))seek(e.clientY);}}><span style={{top:`${progress*88}%`}}/></div>
- <div className={`fluid-contact ${contact?'is-open':''}`}><div className="fluid-contact__links" inert={!contact}><a href="https://t.me/katt_dev" target="_blank" rel="noopener noreferrer"><Send size={18}/>Telegram</a><button onClick={async()=>{try{await navigator.clipboard.writeText('katt.devv@gmail.com');setNotice('Почта скопирована');}catch{location.href='mailto:katt.devv@gmail.com';}}}><Copy size={18}/>Скопировать почту</button><a href="#contact" onClick={()=>setContact(false)}>Описать задачу</a></div><button className="fluid-contact__toggle" aria-expanded={contact} aria-label={contact?'Закрыть контакты':'Обсудить проект'} onClick={()=>setContact(!contact)}>{contact?<X size={20}/>:<><span className="contact-drop"/>Обсудить проект</>}</button></div>
  <div className={`fluid-toast ${notice?'is-visible':''}`} role="status" aria-live="polite">{notice&&<><Check size={18}/><span>{notice}</span><button aria-label="Закрыть уведомление" onClick={()=>setNotice('')}><X size={16}/></button></>}</div></>;
 }
 import type { Project } from './data/projects';
