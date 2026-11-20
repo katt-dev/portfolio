@@ -2,6 +2,8 @@
 import { Check, ChevronDown, X } from 'lucide-react';
 import Lenis from 'lenis';
 import { flushSync } from 'react-dom';
+import { BreathingInk } from './Mascot';
+import { Plus } from 'lucide-react';
 
 export function fluidRoute(action:()=>void){
  if(document.startViewTransition&&!matchMedia('(prefers-reduced-motion: reduce)').matches){document.startViewTransition(()=>flushSync(action));}else action();
@@ -24,41 +26,29 @@ export function FluidHint({label,text}:{label:string;text:string}){
 
 export function FluidDetails({title,children}:{title:string;children:React.ReactNode}){
  const [open,setOpen]=useState(false);const id=useRef(`detail-${Math.random().toString(36).slice(2)}`);
- return <div className={`fluid-details ${open?'is-open':''}`}><button type="button" aria-expanded={open} aria-controls={id.current} onClick={()=>setOpen(!open)}>{title}<span>{open?'−':'+'}</span></button><div className="fluid-details__body" id={id.current} inert={!open}><div>{children}</div></div></div>;
+ return <div className={`fluid-details ${open?'is-open':''}`}><button type="button" aria-expanded={open} aria-controls={id.current} onClick={()=>setOpen(!open)}>{title}<span className="disclosure-glyph"><BreathingInk small/><Plus size={14}/></span></button><div className="fluid-details__body" id={id.current} inert={!open}><div>{children}</div></div></div>;
 }
 
 export function FluidInterface(){
- const [progress,setProgress]=useState(0),[notice,setNotice]=useState('');const rail=useRef<HTMLDivElement>(null);const scroller=useRef<HTMLElement|null>(null);
+ const [progress,setProgress]=useState(0),[ratio,setRatio]=useState(.1),[notice,setNotice]=useState('');const grab=useRef(0);const rail=useRef<HTMLDivElement>(null);const scroller=useRef<HTMLElement|null>(null);
  useEffect(()=>{
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');let lenis:Lenis|undefined;
   const create=()=>{lenis?.destroy();lenis=undefined;if(!reduced.matches)lenis=new Lenis({autoRaf:true,lerp:.09,smoothWheel:true,anchors:{offset:-35},prevent:node=>!!node.closest('.case,.fluid-select__options,[data-lenis-prevent]')});};create();reduced.addEventListener('change',create);
-  const scroll=()=>{const modal=document.querySelector<HTMLElement>('dialog[open]');scroller.current=modal??document.scrollingElement as HTMLElement;const el=scroller.current;setProgress(el.scrollTop/Math.max(1,el.scrollHeight-el.clientHeight));};
+  const scroll=()=>{const modal=document.querySelector<HTMLElement>('dialog[open]');scroller.current=modal??document.scrollingElement as HTMLElement;const el=scroller.current;setProgress(el.scrollTop/Math.max(1,el.scrollHeight-el.clientHeight));setRatio(Math.min(.9,Math.max(.06,el.clientHeight/Math.max(el.scrollHeight,1))));};
   document.addEventListener('scroll',scroll,true);window.addEventListener('resize',scroll);const mo=new MutationObserver(()=>{if(document.body.classList.contains('case-is-open'))lenis?.stop();else lenis?.start();scroll();});mo.observe(document.body,{attributes:true,attributeFilter:['class']});scroll();
-  const pointer=(e:PointerEvent)=>{const el=(e.target as Element).closest<HTMLElement>('.button,.icon-button,.fluid-select__trigger,.project-card__visual,.fluid-details>button');if(el){const b=el.getBoundingClientRect();el.style.setProperty('--hx',`${e.clientX-b.left}px`);el.style.setProperty('--hy',`${e.clientY-b.top}px`);}};
-  const down=(e:PointerEvent)=>{const el=(e.target as Element).closest<HTMLElement>('button,.button');if(!el)return;const b=el.getBoundingClientRect();const drop=document.createElement('i');drop.className='ink-ripple';drop.style.left=`${e.clientX-b.left}px`;drop.style.top=`${e.clientY-b.top}px`;el.appendChild(drop);drop.addEventListener('animationend',()=>drop.remove(),{once:true});};
-  const notify=(e:Event)=>{setNotice((e as CustomEvent<string>).detail);};window.addEventListener('fluid:notice',notify);document.addEventListener('pointermove',pointer,{passive:true});document.addEventListener('pointerdown',down);
-  return()=>{lenis?.destroy();mo.disconnect();reduced.removeEventListener('change',create);document.removeEventListener('scroll',scroll,true);window.removeEventListener('resize',scroll);document.removeEventListener('pointermove',pointer);document.removeEventListener('pointerdown',down);window.removeEventListener('fluid:notice',notify);};
+  const notify=(e:Event)=>{setNotice((e as CustomEvent<string>).detail);};window.addEventListener('fluid:notice',notify);
+  return()=>{lenis?.destroy();mo.disconnect();reduced.removeEventListener('change',create);document.removeEventListener('scroll',scroll,true);window.removeEventListener('resize',scroll);window.removeEventListener('fluid:notice',notify);};
  },[]);
  useEffect(()=>{if(!notice)return;const t=setTimeout(()=>setNotice(''),3500);return()=>clearTimeout(t);},[notice]);
- const seek=(y:number)=>{const box=rail.current?.getBoundingClientRect(),el=scroller.current;if(!box||!el)return;const n=Math.max(0,Math.min(1,(y-box.top)/box.height));el.scrollTo({top:n*(el.scrollHeight-el.clientHeight),behavior:'instant'});};
- return <><svg width="0" height="0" className="fluid-defs" aria-hidden="true"><defs><filter id="ink-goo" x="-30%" y="-60%" width="160%" height="220%" colorInterpolationFilters="sRGB"><feGaussianBlur in="SourceGraphic" stdDeviation="5"/><feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -9"/></filter></defs></svg><div ref={rail} className="fluid-scroll" role="scrollbar" tabIndex={0} aria-label="Прокрутка страницы" aria-controls="root" aria-valuenow={Math.round(progress*100)} aria-valuemin={0} aria-valuemax={100} aria-orientation="vertical" onKeyDown={e=>{const el=scroller.current;if(!el)return;if(['ArrowUp','ArrowDown','PageUp','PageDown','Home','End'].includes(e.key)){e.preventDefault();el.scrollBy({top:e.key==='Home'?-el.scrollHeight:e.key==='End'?el.scrollHeight:(e.key.includes('Up')?-1:1)*(e.key.startsWith('Page')?innerHeight*.8:80),behavior:'smooth'});}}} onPointerDown={e=>{e.currentTarget.setPointerCapture(e.pointerId);seek(e.clientY);}} onPointerMove={e=>{if(e.currentTarget.hasPointerCapture(e.pointerId))seek(e.clientY);}}><span style={{top:`${progress*88}%`}}/></div>
+ const seek=(y:number)=>{const box=rail.current?.getBoundingClientRect(),el=scroller.current;if(!box||!el)return;const n=Math.max(0,Math.min(1,(y-box.top-grab.current)/(box.height*(1-ratio))));el.scrollTo({top:n*(el.scrollHeight-el.clientHeight),behavior:'instant'});};
+ return <><div ref={rail} className="fluid-scroll" role="scrollbar" tabIndex={0} aria-label="Прокрутка страницы" aria-controls="root" aria-valuenow={Math.round(progress*100)} aria-valuemin={0} aria-valuemax={100} aria-orientation="vertical" onKeyDown={e=>{const el=scroller.current;if(!el)return;if(['ArrowUp','ArrowDown','PageUp','PageDown','Home','End'].includes(e.key)){e.preventDefault();el.scrollBy({top:e.key==='Home'?-el.scrollHeight:e.key==='End'?el.scrollHeight:(e.key.includes('Up')?-1:1)*(e.key.startsWith('Page')?innerHeight*.8:80),behavior:'smooth'});}}} onPointerDown={e=>{const thumb=e.currentTarget.querySelector('span')!.getBoundingClientRect();grab.current=e.target===e.currentTarget.querySelector('span')?e.clientY-thumb.top:thumb.height/2;e.currentTarget.setPointerCapture(e.pointerId);seek(e.clientY);}} onPointerMove={e=>{if(e.currentTarget.hasPointerCapture(e.pointerId))seek(e.clientY);}}><span style={{top:`${progress*(1-ratio)*100}%`,height:`${ratio*100}%`}}/></div>
  <div className={`fluid-toast ${notice?'is-visible':''}`} role="status" aria-live="polite">{notice&&<><Check size={18}/><span>{notice}</span><button aria-label="Закрыть уведомление" onClick={()=>setNotice('')}><X size={16}/></button></>}</div></>;
 }
 import type { Project } from './data/projects';
 import { asset, coverOf } from './data/projects';
 
 export function BrandMark(){
- const ref=useRef<HTMLSpanElement>(null);
- useEffect(()=>{const el=ref.current;if(!el)return;let animation:Animation|undefined;let stopped=false,angle=0;const reduced=matchMedia('(prefers-reduced-motion: reduce)');
- const spin=()=>{if(stopped||reduced.matches)return;const next=angle+(Math.random()>.45?1:-1)*(100+Math.random()*300);animation=el.animate([{transform:`rotate(${angle}deg)`},{transform:`rotate(${next}deg)`}],{duration:3500+Math.random()*3500,easing:'cubic-bezier(.45,0,.55,1)',fill:'forwards'});angle=next;animation.onfinish=spin;};
- const change=()=>{animation?.cancel();if(!reduced.matches)spin();};spin();reduced.addEventListener('change',change);return()=>{stopped=true;animation?.cancel();reduced.removeEventListener('change',change);};},[]);
- return <span ref={ref} className="wordmark__blob" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M31 5C40 3 43 14 51 17C62 22 62 33 55 40C50 45 54 56 43 59C32 63 30 54 22 54C11 55 6 47 10 37C13 29 1 24 9 14C15 6 23 10 31 5Z"/></svg></span>;
-}
-
-export function HeroDemo(){
- const [mode,setMode]=useState(0),[score,setScore]=useState(0);
- const titles=['Игра','Сервис','Автоматизация'];
- return <div className="hero-demo" data-lenis-prevent><span className="eyebrow">Попробуйте интерфейс</span><div className="hero-demo__tabs" role="group" aria-label="Демонстрация интерфейса">{titles.map((t,i)=><button key={t} aria-pressed={mode===i} onClick={()=>{setMode(i);setScore(0);}}>{t}</button>)}</div><div className={`hero-demo__stage demo-mode-${mode}`}><span className="demo-link link-a"/><span className="demo-link link-b"/><button className="demo-node node-a" aria-label={mode===0?'Собрать ресурс':mode===1?'Создать подписку':'Добавить задачу'} onClick={()=>setScore(n=>n+1)}>{mode===0?'Ресурс':mode===1?'Подписка':'Задача'}</button><span className="demo-node node-b">{mode===0?'Инвентарь':mode===1?'Оплата':'Обработка'}</span><span className={`demo-node node-c ${score?'has-score':''}`}>{score?`${score} ${mode===0?'собрано':mode===1?'готово':'выполнено'}`:'Результат'}</span>{score>0&&<i key={score} className="demo-packet"/>}</div><p>Нажмите «{mode===0?'Ресурс':mode===1?'Подписка':'Задача'}» — действие пройдёт по всей цепочке.</p><small>Интерактивная схема, не экран готового приложения.</small></div>;
+ return <span className="wordmark__blob" aria-hidden="true"><BreathingInk small/></span>;
 }
 
 const briefKinds=['Разработать игру','Приложение или сервис','Сайт','Бот и автоматизация','Доработать готовый проект','Пока хочу обсудить'];
