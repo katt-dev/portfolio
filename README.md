@@ -56,3 +56,5 @@ GitHub Actions собирает и публикует `dist/` при push в `ma
 `ProjectGallery.tsx` переключает декодированные изображения локальным кроссфейдом в постоянной рамке с `object-fit: contain`. Переход всего документа для кадров галереи не используется.
 
 Движение субстанции адаптировано из `internal/bot/webapp/loader.js` Freeward VPN. Независимые плавные траектории замедлены, а смещения мягко ограничены внутри центрального сгустка — отдельные капли не отрываются.
+
+Icon comparison variants were removed: the original CSS hover animations are restored for every URL. Ink motion runs at 1.1 time speed with a smoothly bounded 0.18 center reach; the core remains connected. The header wordmark has no hover scaling.
