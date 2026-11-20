@@ -4,13 +4,16 @@ import Lenis from 'lenis';
 import { flushSync } from 'react-dom';
 import { BreathingInk } from './Mascot';
 import { Plus } from 'lucide-react';
+import { installIconMotion } from './IconMotion';
 
 let transitionIndex=0;
+const projectOrigins=new Map<string,HTMLElement>();
 export function fluidRoute(action:()=>void){
  const index=++transitionIndex;
  const before=new URLSearchParams(location.search).get('project');
- const update=()=>{flushSync(action);document.querySelectorAll<HTMLElement>('.project-card__visual').forEach(el=>el.style.viewTransitionName='none');const after=new URLSearchParams(location.search).get('project');if(before&&!after){const card=document.querySelector<HTMLElement>(`.project-card--${CSS.escape(before)} .project-card__visual`);if(card)card.style.viewTransitionName=`cover-${before}`;}window.dispatchEvent(new Event('ink:refresh'));};
- const clean=()=>{if(index===transitionIndex)document.querySelectorAll<HTMLElement>('.project-card__visual').forEach(el=>el.style.viewTransitionName='none');};
+ const origin=[...document.querySelectorAll<HTMLElement>('.project-card__visual,.skill-project-preview')].find(el=>el.style.viewTransitionName.startsWith('cover-'));if(!before&&origin)projectOrigins.set(origin.style.viewTransitionName.slice(6),origin);
+ const update=()=>{flushSync(action);document.querySelectorAll<HTMLElement>('.project-card__visual,.skill-project-preview').forEach(el=>el.style.viewTransitionName='none');const after=new URLSearchParams(location.search).get('project');if(before&&!after){const candidates=[...document.querySelectorAll<HTMLElement>(`[data-project-preview="${CSS.escape(before)}"],.project-card--${CSS.escape(before)} .project-card__visual`)];const remembered=projectOrigins.get(before);if(remembered?.isConnected)candidates.unshift(remembered);const card=candidates.find(el=>{const b=el.getBoundingClientRect();return b.top<innerHeight&&b.bottom>0;})??candidates[0];if(card)card.style.viewTransitionName=`cover-${before}`;}window.dispatchEvent(new Event('ink:refresh'));};
+ const clean=()=>{if(index===transitionIndex)document.querySelectorAll<HTMLElement>('.project-card__visual,.skill-project-preview').forEach(el=>el.style.viewTransitionName='none');};
  if(document.startViewTransition&&!matchMedia('(prefers-reduced-motion: reduce)').matches){const transition=document.startViewTransition(update);transition.finished.then(clean,clean);}else{update();clean();}
 }
 
@@ -39,6 +42,7 @@ export function FluidDetails({title,children}:{title:string;children:React.React
 export function FluidInterface(){
  const [notice,setNotice]=useState('');
  useEffect(()=>{
+  const removeIconMotion=installIconMotion();
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');let main:Lenis|undefined,modal:Lenis|undefined,wrapper:HTMLElement|null=null;
   const easing=(t:number)=>1-Math.pow(1-t,4);
   const setupModal=()=>{const next=document.querySelector<HTMLElement>('dialog[open]');if(next!==wrapper){modal?.destroy();modal=undefined;wrapper=next;if(next&&!reduced.matches){const content=next.querySelector<HTMLElement>('.case__sheet');if(content)modal=new Lenis({wrapper:next,content,autoRaf:true,lerp:0,duration:.7,easing,smoothWheel:true,stopInertiaOnNavigate:true});}}if(next)main?.stop();else main?.start();};
@@ -52,7 +56,7 @@ export function FluidInterface(){
   const press=(target:EventTarget|null,clientX?:number,clientY?:number)=>{if(reduced.matches)return;const el=(target as Element)?.closest<HTMLElement>('button,a.button,.header__contact,.contact__telegram');if(!el||el.matches(':disabled'))return;pressed.get(el)?.cancel();const b=el.getBoundingClientRect();const x=clientX===undefined?50:Math.max(0,Math.min(100,(clientX-b.left)/b.width*100)),y=clientY===undefined?50:Math.max(0,Math.min(100,(clientY-b.top)/b.height*100));el.dataset.pressFeedback='true';el.style.setProperty('--press-x',`${x}%`);el.style.setProperty('--press-y',`${y}%`);const animation=el.animate([{clipPath:`circle(0% at ${x}% ${y}%)`,opacity:.18},{clipPath:`circle(150% at ${x}% ${y}%)`,opacity:0}],{duration:550,easing:'cubic-bezier(.2,.7,.3,1)',pseudoElement:'::after'});if(animation.effect instanceof KeyframeEffect&&animation.effect.pseudoElement==='::after'){pressed.set(el,animation);}else{animation.cancel();const original=getComputedStyle(el).boxShadow;pressed.set(el,el.animate([{boxShadow:original},{boxShadow:'inset 0 0 0 2px #80808055',offset:.25},{boxShadow:original}],{duration:400}));}};
   const down=(e:PointerEvent)=>press(e.target,e.clientX,e.clientY),key=(e:KeyboardEvent)=>{if(!e.repeat&&(e.key==='Enter'||e.key===' '))press(e.target);};document.addEventListener('pointerdown',down);document.addEventListener('keydown',key);
   const notify=(e:Event)=>setNotice((e as CustomEvent<string>).detail);window.addEventListener('fluid:notice',notify);
-  return()=>{main?.destroy();modal?.destroy();observer.disconnect();reduced.removeEventListener('change',create);window.removeEventListener('case:scroll',caseScroll);window.removeEventListener('fluid:notice',notify);document.removeEventListener('pointerover',enter);document.removeEventListener('pointerdown',down);document.removeEventListener('keydown',key);};
+  return()=>{removeIconMotion();main?.destroy();modal?.destroy();observer.disconnect();reduced.removeEventListener('change',create);window.removeEventListener('case:scroll',caseScroll);window.removeEventListener('fluid:notice',notify);document.removeEventListener('pointerover',enter);document.removeEventListener('pointerdown',down);document.removeEventListener('keydown',key);};
  },[]);
  useEffect(()=>{if(!notice)return;const timer=setTimeout(()=>setNotice(''),3500);return()=>clearTimeout(timer);},[notice]);
  return <div className={`fluid-toast ${notice?'is-visible':''}`} role="status" aria-live="polite">{notice&&<><Check size={18}/><span>{notice}</span><button aria-label="Закрыть уведомление" onClick={()=>setNotice('')}><X size={16}/></button></>}</div>;

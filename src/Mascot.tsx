@@ -2,36 +2,29 @@ import { useEffect, useRef } from 'react';
 
 // One shared smooth field for every ink mark; small marks reuse the same rendered frame.
 const vertex=`attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}`;
+// Motion adapted from Freeward VPN's Telegram Mini App loader.js.
+const between=(low:number,high:number)=>low+Math.random()*(high-low);
+const makeDrop=(radius:number,reach:number)=>{const wave=()=>({size:between(.5,1)*reach,speed:between(.12,.42)*(Math.random()<.5?-1:1),phase:between(0,Math.PI*2)});return{radius,breathe:between(.3,.7),phase:between(0,6),x:[wave(),wave()],y:[wave(),wave()]};};
+const drops=[makeDrop(.17,0),makeDrop(.085,.2),makeDrop(.075,.23),makeDrop(.07,.26),makeDrop(.06,.29),makeDrop(.055,.31),makeDrop(.045,.33)];
+const packed=new Float32Array(drops.length*3);
+const follow=(waves:{size:number;speed:number;phase:number}[],t:number)=>waves.reduce((sum,w)=>sum+Math.sin(t*w.speed+w.phase)*w.size*.62,0);
 const fragment=`#extension GL_OES_standard_derivatives : enable
-precision highp float;uniform vec2 res;uniform float time;
-float hash(float n){return fract(sin(n*127.1+311.7)*43758.5453);}
-float noise(float t){float i=floor(t),f=fract(t);f=f*f*f*(f*(f*6.-15.)+10.);return mix(hash(i),hash(i+1.),f)*2.-1.;}
-float field(vec2 q){
- vec2 a=vec2(noise(time*.17+11.37),noise(time*.14+27.61))*.027;
- vec2 b=vec2(noise(time*.13+49.23),noise(time*.18+71.71))*.027;
- vec2 c=vec2(noise(time*.16+93.44),noise(time*.12+119.17))*.027;
- vec2 mean=(a+b+c)/3.;float dr=noise(time*.15+151.56)*.005;
- float f=0.;for(int i=0;i<4;i++){vec2 center=vec2(0.);float r=.19;
- if(i==1){center=vec2(-.11,.085)+a-mean;r=.12+dr;}
- if(i==2){center=vec2(.13,.035)+b-mean;r=.12-dr*.5;}
- if(i==3){center=vec2(.015,-.13)+c-mean;r=.13-dr*.5;}
- vec2 d=q-center;float v=r*r/(dot(d,d)+.00001);f+=v*v;}return f;
-}
-void main(){vec2 q=(gl_FragCoord.xy/res-.5)*1.05;float f=field(q);float aa=clamp(fwidth(f)*1.3,.001,.2);float mask=smoothstep(1.-aa,1.+aa,f);gl_FragColor=vec4(0.,0.,0.,mask);}`;
+precision highp float;uniform vec2 res;uniform vec3 drops[7];
+void main(){vec2 q=gl_FragCoord.xy/res-.5;float field=0.;for(int i=0;i<7;i++){vec2 d=q-drops[i].xy;float share=drops[i].z/(dot(d,d)+.000001);field+=min(share*share,4.);}float alpha=clamp((field-1.)/max(fwidth(field),.0001)+.5,0.,1.);gl_FragColor=vec4(0.,0.,0.,alpha);}`;
 type Surface={canvas:HTMLCanvasElement;context:CanvasRenderingContext2D;visible:boolean;width:number;height:number};
 const surfaces=new Set<Surface>();
 let source:HTMLCanvasElement|undefined,gl:WebGLRenderingContext|null=null,program:WebGLProgram|null=null,buffer:WebGLBuffer|null=null,raf=0,last=0,clock=0;
-let timeUniform:WebGLUniformLocation|null=null,resUniform:WebGLUniformLocation|null=null;
+let dropsUniform:WebGLUniformLocation|null=null,resUniform:WebGLUniformLocation|null=null;
 const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 function prepare(){
  if(source)return !!gl;source=document.createElement('canvas');gl=source.getContext('webgl',{alpha:true,antialias:true,premultipliedAlpha:false});if(!gl)return false;
  const context=gl;context.getExtension('OES_standard_derivatives');const shader=(type:number,text:string)=>{const s=context.createShader(type)!;context.shaderSource(s,text);context.compileShader(s);if(!context.getShaderParameter(s,context.COMPILE_STATUS)){context.deleteShader(s);return null;}return s;};const v=shader(context.VERTEX_SHADER,vertex),f=shader(context.FRAGMENT_SHADER,fragment);if(!v||!f){gl=null;return false;}
- program=context.createProgram()!;context.attachShader(program,v);context.attachShader(program,f);context.linkProgram(program);context.deleteShader(v);context.deleteShader(f);if(!context.getProgramParameter(program,context.LINK_STATUS)){gl=null;return false;}context.useProgram(program);buffer=context.createBuffer();context.bindBuffer(context.ARRAY_BUFFER,buffer);context.bufferData(context.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),context.STATIC_DRAW);const p=context.getAttribLocation(program,'p');context.enableVertexAttribArray(p);context.vertexAttribPointer(p,2,context.FLOAT,false,0,0);timeUniform=context.getUniformLocation(program,'time');resUniform=context.getUniformLocation(program,'res');return true;
+ program=context.createProgram()!;context.attachShader(program,v);context.attachShader(program,f);context.linkProgram(program);context.deleteShader(v);context.deleteShader(f);if(!context.getProgramParameter(program,context.LINK_STATUS)){gl=null;return false;}context.useProgram(program);buffer=context.createBuffer();context.bindBuffer(context.ARRAY_BUFFER,buffer);context.bufferData(context.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),context.STATIC_DRAW);const p=context.getAttribLocation(program,'p');context.enableVertexAttribArray(p);context.vertexAttribPointer(p,2,context.FLOAT,false,0,0);dropsUniform=context.getUniformLocation(program,'drops');resUniform=context.getUniformLocation(program,'res');return true;
 }
 function schedule(){if(!raf&&!document.hidden&&Array.from(surfaces).some(s=>s.visible))raf=requestAnimationFrame(draw);}
 function draw(now:number){
  raf=0;if(document.hidden||!source||!gl)return;const active=Array.from(surfaces).filter(s=>s.visible&&s.width&&s.height);if(!active.length)return;
- const size=Math.min(1536,Math.max(64,...active.map(s=>Math.min(s.width,s.height))));if(source.width!==size||source.height!==size){source.width=size;source.height=size;gl.viewport(0,0,size,size);}clock+=reduced()?0:Math.min((now-last)/1000||.016,.25);last=now;gl.uniform2f(resUniform,size,size);gl.uniform1f(timeUniform,clock);gl.clear(gl.COLOR_BUFFER_BIT);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+ const size=Math.min(1536,Math.max(64,...active.map(s=>Math.min(s.width,s.height))));if(source.width!==size||source.height!==size){source.width=size;source.height=size;gl.viewport(0,0,size,size);}clock+=reduced()?0:Math.min((now-last)/1000||.016,.25);last=now;gl.uniform2f(resUniform,size,size);drops.forEach((d,i)=>{const t=clock*.65,radius=d.radius*(1.+.1*Math.sin(t*d.breathe+d.phase));const x=follow(d.x,t),y=follow(d.y,t),length=Math.hypot(x,y),join=length>0?.14*Math.tanh(length/.14)/length:1;packed.set([x*join,y*join,radius*radius],i*3);});gl.uniform3fv(dropsUniform,packed);gl.clear(gl.COLOR_BUFFER_BIT);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
  for(const s of active){const side=Math.min(s.width,s.height);s.context.clearRect(0,0,s.width,s.height);s.context.drawImage(source,(s.width-side)/2,(s.height-side)/2,side,side);}
  if(!reduced())schedule();
 }
