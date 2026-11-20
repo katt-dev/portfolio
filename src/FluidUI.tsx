@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { Check, ChevronDown, X } from 'lucide-react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Check, ChevronDown, X, Gamepad2, Globe2, LayoutGrid, Bot, Wrench, MessageCircle } from 'lucide-react';
 import Lenis from 'lenis';
 import { flushSync } from 'react-dom';
 import { BreathingInk } from './Mascot';
@@ -15,12 +15,14 @@ export function fluidRoute(action:()=>void){
 }
 
 export function FluidSelect({value,onChange,options}:{value:string;onChange:(s:string)=>void;options:string[]}){
- const [open,setOpen]=useState(false);const [active,setActive]=useState(0);const root=useRef<HTMLDivElement>(null);const trigger=useRef<HTMLButtonElement>(null);
+ const [open,setOpen]=useState(false);const [active,setActive]=useState(0);const [placement,setPlacement]=useState('bottom');const [maxHeight,setMaxHeight]=useState(344);const root=useRef<HTMLDivElement>(null);const trigger=useRef<HTMLButtonElement>(null);
  useEffect(()=>{if(!open)return;const outside=(e:PointerEvent)=>{if(!root.current?.contains(e.target as Node))setOpen(false);};document.addEventListener('pointerdown',outside);return()=>document.removeEventListener('pointerdown',outside);},[open]);
+ useLayoutEffect(()=>{if(!open)return;const update=()=>{const b=trigger.current?.getBoundingClientRect();if(!b)return;const below=innerHeight-b.bottom-20,above=b.top-20,up=below<300&&above>below;setPlacement(up?'top':'bottom');setMaxHeight(Math.min(344,Math.max(150,up?above:below)));};update();window.addEventListener('resize',update);return()=>window.removeEventListener('resize',update);},[open]);
+ const icons=[Gamepad2,Globe2,LayoutGrid,Bot,Wrench,MessageCircle];
  const choose=(n:number)=>{onChange(options[n]);setOpen(false);trigger.current?.focus();};
- return <div className={`fluid-select ${open?'is-open':''}`} ref={root} onBlur={e=>{if(!e.currentTarget.contains(e.relatedTarget))setOpen(false);}}>
+ return <div className={`fluid-select ${open?'is-open':''}`} data-placement={placement} style={{'--select-max-height':`${maxHeight}px`} as React.CSSProperties} ref={root} onBlur={e=>{if(!e.currentTarget.contains(e.relatedTarget))setOpen(false);}}>
  <button ref={trigger} id="kind" className="fluid-select__trigger" type="button" role="combobox" aria-controls="kind-options" aria-expanded={open} aria-haspopup="listbox" aria-activedescendant={open?`kind-${active}`:undefined} onClick={()=>{setActive(Math.max(0,options.indexOf(value)));setOpen(!open);}} onKeyDown={e=>{if(['ArrowDown','ArrowUp','Home','End','Escape','Enter',' '].includes(e.key)){e.preventDefault();if(e.key==='Escape'){setOpen(false);return;}if(e.key==='Enter'||e.key===' '){if(open)choose(active);else setOpen(true);return;}setOpen(true);setActive(n=>e.key==='Home'?0:e.key==='End'?options.length-1:(n+(e.key==='ArrowDown'?1:-1)+options.length)%options.length);}}}><span>{value}</span><ChevronDown size={18}/></button>
- {open&&<div className="fluid-select__options" role="listbox" id="kind-options" aria-label="Тип проекта">{options.map((o,i)=><div id={`kind-${i}`} key={o} role="option" aria-selected={value===o} className={active===i?'is-active':''} onPointerMove={()=>setActive(i)} onPointerDown={e=>e.preventDefault()} onClick={()=>choose(i)}><span>{o}</span>{value===o&&<Check size={16}/>}</div>)}</div>}
+ {open&&<div className="fluid-select__options" role="listbox" id="kind-options" aria-label="Тип проекта">{options.map((o,i)=>{const Icon=icons[i%icons.length];return <div id={`kind-${i}`} key={o} role="option" aria-selected={value===o} className={active===i?'is-active':''} onPointerMove={()=>setActive(i)} onPointerDown={e=>e.preventDefault()} onClick={()=>choose(i)}><Icon size={18} className="select-option__icon"/><span>{o}</span>{value===o&&<Check size={16} className="select-option__check"/>}</div>})}</div>}
  </div>;
 }
 
