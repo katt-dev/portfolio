@@ -82,6 +82,7 @@ export default function App(){
  return <>
   <a className="skip-link" href="#main">К содержанию</a>
   <Navigation/>
+  <div className="page-scroll"><div className="page-scroll__content">
   <main id="main">
    <section className="hero wrap"><div className="hero__copy" data-intro="pending"><span className="eyebrow intro-line">Разработчик цифровых продуктов</span><h1><span className="intro-line">Создаю игры,</span><span className="intro-line">приложения</span><span className="hero__outline intro-line">и сервисы<span className="hero__period">.</span></span></h1><div className="hero__lead hero__proof intro-line"><span><Zap size={19}/>Быстрее с ИИ</span><span><ShieldCheck size={19}/>Код под моим контролем</span></div><div className="hero__actions intro-line"><a className="button button--dark" href="#contact" onMouseEnter={ping}><span className="button__label">Обсудить вашу идею</span></a><a className="button button--plain" href="#work"><FolderOpen size={18}/>Мои проекты</a></div><div className="hero__availability intro-line"><span className="availability-dot"/>{site.availableLabel}<span className="hero__name">katt / independent developer</span></div></div><div className="hero__stage"><Mascot/><div className="hero__stage-footer"><span>Игры. Приложения. Сервисы.<br/>От прототипа до рабочей версии.</span><span className="hero__cross">✳</span></div></div></section>
    <div className="craft-strip wrap"><span>От механики<br/> до целого продукта</span><div>Unity <i/> C# <i/> Golang <i/> Python <i/> UI / UX</div><Code2 size={26}/></div>
@@ -91,6 +92,7 @@ export default function App(){
    <section id="contact" className="contact section-space"><div className="wrap contact__layout"><div data-reveal><span className="eyebrow">Хорошие проекты начинаются с разговора</span><h2>Превратим идею<br/>в продукт<span>.</span></h2><p>Опишите задачу своими словами.<br/>Помогу определить функции и первый шаг.</p><a className="contact__telegram" href="https://t.me/katt_dev" target="_blank" rel="noopener noreferrer">Написать в Telegram<ExternalLink size={22}/></a><button className="contact__email" onClick={copyEmail}>{site.email}{copied?<Check size={17}/>:<Copy size={17}/>}</button><span className="contact__notice" role="status">{copied?'Почта скопирована':site.responseTime}</span></div><BriefWizard/></div></section>
   </main>
   <footer className="footer wrap"><a href="#" className="wordmark"><BrandMark/>katt</a><span>Идея. Реализация. Результат.</span><span>© {new Date().getFullYear()} katt</span><a href="#main">Наверх</a></footer>
+  </div></div>
   <FluidInterface/>
   {route&&<Case id={route}/>}
  </>;

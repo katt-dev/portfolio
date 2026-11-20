@@ -203,3 +203,20 @@ html[data-dark-hover=sweep] .button--dark,html[data-dark-hover=sweep] .header--s
  .header:not(.header--side) nav{max-height:calc(var(--browser-visible-height,100dvh) - var(--site-header-height) - 24px)}
  .case__nav:before{content:'';display:block;position:absolute;left:0;right:0;bottom:calc(100% - 1px);height:100vh;height:100lvh;background:#f0f1f3;pointer-events:none;z-index:-1}.case__nav{isolation:isolate}
 }
+
+/* Mobile browsing owns one clipped scrolling surface below the navigation.
+   The document behind Telegram's translucent chrome never scrolls. */
+.page-scroll,.page-scroll__content{display:contents}
+@media(max-width:1199px){
+ html,body,#root{height:100%;min-height:0;overflow:hidden;overscroll-behavior:none;background:#f0f1f2}
+ html{scroll-padding-top:0;scrollbar-gutter:auto;scroll-behavior:auto!important}
+ .header-space{display:none;height:0;min-height:0}
+ .header:not(.header--side):before{content:none;display:none}
+ .page-scroll{display:block;position:fixed;top:calc(var(--browser-visible-top,0px) + var(--site-header-height));left:0;right:0;height:calc(var(--browser-visible-height,100dvh) - var(--site-header-height));overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;clip-path:inset(0);contain:paint;isolation:isolate;scroll-padding:16px 0;scrollbar-gutter:auto;scroll-behavior:smooth;background:#f0f1f2;z-index:1}
+ .page-scroll__content{display:flow-root;min-height:100%;background:#f0f1f2}
+ .page-scroll main{padding-top:0}.case-is-open .page-scroll{overflow-y:hidden}
+ .header:not(.header--side){z-index:40}
+ .case__nav:before{content:none;display:none}
+ .fluid-toast{bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+}
+@media(prefers-reduced-motion:reduce){.page-scroll{scroll-behavior:auto}}
