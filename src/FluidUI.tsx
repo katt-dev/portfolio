@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Check, ChevronDown, X } from 'lucide-react';
 import Lenis from 'lenis';
 import { flushSync } from 'react-dom';
@@ -26,23 +26,20 @@ export function FluidHint({label,text}:{label:string;text:string}){
 
 export function FluidDetails({title,children}:{title:string;children:React.ReactNode}){
  const [open,setOpen]=useState(false);const id=useRef(`detail-${Math.random().toString(36).slice(2)}`);
- return <div className={`fluid-details ${open?'is-open':''}`}><button type="button" aria-expanded={open} aria-controls={id.current} onClick={()=>setOpen(!open)}>{title}<span className="disclosure-glyph"><BreathingInk small/><Plus size={14}/></span></button><div className="fluid-details__body" id={id.current} inert={!open}><div>{children}</div></div></div>;
+ return <div className={`fluid-details ${open?'is-open':''}`}><button type="button" aria-expanded={open} aria-controls={id.current} onClick={()=>setOpen(!open)}>{title}<span className="disclosure-glyph"><Plus size={14}/></span></button><div className="fluid-details__body" id={id.current} inert={!open}><div>{children}</div></div></div>;
 }
 
 export function FluidInterface(){
- const [progress,setProgress]=useState(0),[ratio,setRatio]=useState(.1),[notice,setNotice]=useState('');const grab=useRef(0);const rail=useRef<HTMLDivElement>(null);const scroller=useRef<HTMLElement|null>(null);
+ const [notice,setNotice]=useState('');
  useEffect(()=>{
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');let lenis:Lenis|undefined;
   const create=()=>{lenis?.destroy();lenis=undefined;if(!reduced.matches)lenis=new Lenis({autoRaf:true,lerp:.09,smoothWheel:true,anchors:{offset:-35},prevent:node=>!!node.closest('.case,.fluid-select__options,[data-lenis-prevent]')});};create();reduced.addEventListener('change',create);
-  const scroll=()=>{const modal=document.querySelector<HTMLElement>('dialog[open]');scroller.current=modal??document.scrollingElement as HTMLElement;const el=scroller.current;setProgress(el.scrollTop/Math.max(1,el.scrollHeight-el.clientHeight));setRatio(Math.min(.9,Math.max(.06,el.clientHeight/Math.max(el.scrollHeight,1))));};
-  document.addEventListener('scroll',scroll,true);window.addEventListener('resize',scroll);const mo=new MutationObserver(()=>{if(document.body.classList.contains('case-is-open'))lenis?.stop();else lenis?.start();scroll();});mo.observe(document.body,{attributes:true,attributeFilter:['class']});scroll();
-  const notify=(e:Event)=>{setNotice((e as CustomEvent<string>).detail);};window.addEventListener('fluid:notice',notify);
-  return()=>{lenis?.destroy();mo.disconnect();reduced.removeEventListener('change',create);document.removeEventListener('scroll',scroll,true);window.removeEventListener('resize',scroll);window.removeEventListener('fluid:notice',notify);};
+  const modal=new MutationObserver(()=>{if(document.body.classList.contains('case-is-open'))lenis?.stop();else lenis?.start();});modal.observe(document.body,{attributes:true,attributeFilter:['class']});
+  const notify=(e:Event)=>setNotice((e as CustomEvent<string>).detail);window.addEventListener('fluid:notice',notify);
+  return()=>{lenis?.destroy();modal.disconnect();reduced.removeEventListener('change',create);window.removeEventListener('fluid:notice',notify);};
  },[]);
- useEffect(()=>{if(!notice)return;const t=setTimeout(()=>setNotice(''),3500);return()=>clearTimeout(t);},[notice]);
- const seek=(y:number)=>{const box=rail.current?.getBoundingClientRect(),el=scroller.current;if(!box||!el)return;const n=Math.max(0,Math.min(1,(y-box.top-grab.current)/(box.height*(1-ratio))));el.scrollTo({top:n*(el.scrollHeight-el.clientHeight),behavior:'instant'});};
- return <><div ref={rail} className="fluid-scroll" role="scrollbar" tabIndex={0} aria-label="Прокрутка страницы" aria-controls="root" aria-valuenow={Math.round(progress*100)} aria-valuemin={0} aria-valuemax={100} aria-orientation="vertical" onKeyDown={e=>{const el=scroller.current;if(!el)return;if(['ArrowUp','ArrowDown','PageUp','PageDown','Home','End'].includes(e.key)){e.preventDefault();el.scrollBy({top:e.key==='Home'?-el.scrollHeight:e.key==='End'?el.scrollHeight:(e.key.includes('Up')?-1:1)*(e.key.startsWith('Page')?innerHeight*.8:80),behavior:'smooth'});}}} onPointerDown={e=>{const thumb=e.currentTarget.querySelector('span')!.getBoundingClientRect();grab.current=e.target===e.currentTarget.querySelector('span')?e.clientY-thumb.top:thumb.height/2;e.currentTarget.setPointerCapture(e.pointerId);seek(e.clientY);}} onPointerMove={e=>{if(e.currentTarget.hasPointerCapture(e.pointerId))seek(e.clientY);}}><span style={{top:`${progress*(1-ratio)*100}%`,height:`${ratio*100}%`}}/></div>
- <div className={`fluid-toast ${notice?'is-visible':''}`} role="status" aria-live="polite">{notice&&<><Check size={18}/><span>{notice}</span><button aria-label="Закрыть уведомление" onClick={()=>setNotice('')}><X size={16}/></button></>}</div></>;
+ useEffect(()=>{if(!notice)return;const timer=setTimeout(()=>setNotice(''),3500);return()=>clearTimeout(timer);},[notice]);
+ return <div className={`fluid-toast ${notice?'is-visible':''}`} role="status" aria-live="polite">{notice&&<><Check size={18}/><span>{notice}</span><button aria-label="Закрыть уведомление" onClick={()=>setNotice('')}><X size={16}/></button></>}</div>;
 }
 import type { Project } from './data/projects';
 import { asset, coverOf } from './data/projects';
