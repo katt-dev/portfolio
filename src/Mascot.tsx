@@ -1,11 +1,11 @@
-﻿import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 // One shared smooth field for every ink mark; small marks reuse the same rendered frame.
 const vertex=`attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}`;
 const fragment=`#extension GL_OES_standard_derivatives : enable
 precision highp float;uniform vec2 res;uniform float time;
-float field(vec2 q){float f=0.;for(int i=0;i<7;i++){float n=float(i);float a=time*(.17+n*.012)+n*2.4;vec2 c=vec2(sin(a),cos(a*.79+n))*(i==0?0.:.14+n*.009);float r=i==0?.17:.075+n*.005;r*=1.+.035*sin(time*.55+n);vec2 d=q-c;float v=r*r/(dot(d,d)+.00001);f+=v*v;}return f;}
-void main(){vec2 q=(gl_FragCoord.xy/res-.5)*1.05;float f=field(q);float aa=clamp(fwidth(f)*1.3,.001,.2);float mask=smoothstep(1.-aa,1.+aa,f);gl_FragColor=vec4(0.,0.,0.,mask);}`;
+float field(vec2 q){float f=0.;for(int i=0;i<4;i++){vec2 c=vec2(0.);float r=.19;if(i==1){c=vec2(-.11,.085);r=.12;}if(i==2){c=vec2(.13,.035);r=.12;}if(i==3){c=vec2(.015,-.13);r=.13;}vec2 d=q-c;float v=r*r/(dot(d,d)+.00001);f+=v*v;}return f;}
+void main(){float breath=1.+.028*sin(time*.42);vec2 q=(gl_FragCoord.xy/res-.5)*1.05/breath;float f=field(q);float aa=clamp(fwidth(f)*1.3,.001,.2);float mask=smoothstep(1.-aa,1.+aa,f);gl_FragColor=vec4(0.,0.,0.,mask);}`;
 type Surface={canvas:HTMLCanvasElement;context:CanvasRenderingContext2D;visible:boolean;width:number;height:number};
 const surfaces=new Set<Surface>();
 let source:HTMLCanvasElement|undefined,gl:WebGLRenderingContext|null=null,program:WebGLProgram|null=null,buffer:WebGLBuffer|null=null,raf=0,last=0,clock=0;
@@ -28,9 +28,9 @@ export function BreathingInk({small=false}:{small?:boolean}){
  const ref=useRef<HTMLCanvasElement>(null);
  useEffect(()=>{const canvas=ref.current!,context=canvas.getContext('2d',{alpha:true});if(!context||!prepare()){canvas.dataset.fallback='true';return;}
  const surface:Surface={canvas,context,visible:false,width:0,height:0};surfaces.add(surface);
- const resize=new ResizeObserver(()=>{const b=canvas.getBoundingClientRect(),dpr=Math.min((devicePixelRatio||1)*1.5,3);surface.width=Math.max(1,Math.round(b.width*dpr));surface.height=Math.max(1,Math.round(b.height*dpr));canvas.width=surface.width;canvas.height=surface.height;context.imageSmoothingEnabled=true;context.imageSmoothingQuality='high';schedule();});resize.observe(canvas);
+ const refresh=()=>{const b=canvas.getBoundingClientRect(),dpr=Math.min((devicePixelRatio||1)*1.5,3);surface.width=Math.max(1,Math.round(b.width*dpr));surface.height=Math.max(1,Math.round(b.height*dpr));canvas.width=surface.width;canvas.height=surface.height;context.imageSmoothingEnabled=true;context.imageSmoothingQuality='high';surface.visible=b.width>0&&b.height>0&&b.bottom>0&&b.top<innerHeight&&b.right>0&&b.left<innerWidth;if(surface.visible){cancelAnimationFrame(raf);raf=0;draw(performance.now());}};const resize=new ResizeObserver(refresh);resize.observe(canvas);window.addEventListener('ink:refresh',refresh);refresh();
  const observer=new IntersectionObserver(([e])=>{surface.visible=e.isIntersecting;schedule();});observer.observe(canvas);const show=()=>schedule(),motion=matchMedia('(prefers-reduced-motion: reduce)');document.addEventListener('visibilitychange',show);motion.addEventListener('change',show);
- return()=>{surfaces.delete(surface);resize.disconnect();observer.disconnect();document.removeEventListener('visibilitychange',show);motion.removeEventListener('change',show);if(!surfaces.size){cancelAnimationFrame(raf);raf=0;}};
+ return()=>{surfaces.delete(surface);window.removeEventListener('ink:refresh',refresh);resize.disconnect();observer.disconnect();document.removeEventListener('visibilitychange',show);motion.removeEventListener('change',show);if(!surfaces.size){cancelAnimationFrame(raf);raf=0;}};
  },[]);
  return <canvas ref={ref} className={`breathing-ink ${small?'breathing-ink--small':''}`} aria-hidden="true"/>;
 }
