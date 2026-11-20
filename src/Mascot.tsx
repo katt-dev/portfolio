@@ -4,7 +4,19 @@ import { useEffect, useRef } from 'react';
 const vertex=`attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}`;
 const fragment=`#extension GL_OES_standard_derivatives : enable
 precision highp float;uniform vec2 res;uniform float time;
-float field(vec2 q){float f=0.;for(int i=0;i<4;i++){vec2 c=vec2(0.);float r=.19;if(i==1){c=vec2(-.11,.085);r=.12;}if(i==2){c=vec2(.13,.035);r=.12;}if(i==3){c=vec2(.015,-.13);r=.13;}vec2 d=q-c;float v=r*r/(dot(d,d)+.00001);f+=v*v;}return f;}
+float hash(float n){return fract(sin(n*127.1+311.7)*43758.5453);}
+float noise(float t){float i=floor(t),f=fract(t);f=f*f*f*(f*(f*6.-15.)+10.);return mix(hash(i),hash(i+1.),f)*2.-1.;}
+float field(vec2 q){
+ vec2 a=vec2(noise(time*.17+11.37),noise(time*.14+27.61))*.027;
+ vec2 b=vec2(noise(time*.13+49.23),noise(time*.18+71.71))*.027;
+ vec2 c=vec2(noise(time*.16+93.44),noise(time*.12+119.17))*.027;
+ vec2 mean=(a+b+c)/3.;float dr=noise(time*.15+151.56)*.005;
+ float f=0.;for(int i=0;i<4;i++){vec2 center=vec2(0.);float r=.19;
+ if(i==1){center=vec2(-.11,.085)+a-mean;r=.12+dr;}
+ if(i==2){center=vec2(.13,.035)+b-mean;r=.12-dr*.5;}
+ if(i==3){center=vec2(.015,-.13)+c-mean;r=.13-dr*.5;}
+ vec2 d=q-center;float v=r*r/(dot(d,d)+.00001);f+=v*v;}return f;
+}
 void main(){vec2 q=(gl_FragCoord.xy/res-.5)*1.05;float f=field(q);float aa=clamp(fwidth(f)*1.3,.001,.2);float mask=smoothstep(1.-aa,1.+aa,f);gl_FragColor=vec4(0.,0.,0.,mask);}`;
 type Surface={canvas:HTMLCanvasElement;context:CanvasRenderingContext2D;visible:boolean;width:number;height:number};
 const surfaces=new Set<Surface>();
@@ -19,9 +31,9 @@ function prepare(){
 function schedule(){if(!raf&&!document.hidden&&Array.from(surfaces).some(s=>s.visible))raf=requestAnimationFrame(draw);}
 function draw(now:number){
  raf=0;if(document.hidden||!source||!gl)return;const active=Array.from(surfaces).filter(s=>s.visible&&s.width&&s.height);if(!active.length)return;
- const size=Math.min(1536,Math.max(64,...active.map(s=>Math.min(s.width,s.height))));if(source.width!==size||source.height!==size){source.width=size;source.height=size;gl.viewport(0,0,size,size);}clock+=reduced()?0:Math.min((now-last)/1000||.016,.04);last=now;gl.uniform2f(resUniform,size,size);gl.uniform1f(timeUniform,clock);gl.clear(gl.COLOR_BUFFER_BIT);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+ const size=Math.min(1536,Math.max(64,...active.map(s=>Math.min(s.width,s.height))));if(source.width!==size||source.height!==size){source.width=size;source.height=size;gl.viewport(0,0,size,size);}clock+=reduced()?0:Math.min((now-last)/1000||.016,.25);last=now;gl.uniform2f(resUniform,size,size);gl.uniform1f(timeUniform,clock);gl.clear(gl.COLOR_BUFFER_BIT);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
  for(const s of active){const side=Math.min(s.width,s.height);s.context.clearRect(0,0,s.width,s.height);s.context.drawImage(source,(s.width-side)/2,(s.height-side)/2,side,side);}
-
+ if(!reduced())schedule();
 }
 
 export function BreathingInk({small=false}:{small?:boolean}){
