@@ -1,6 +1,7 @@
 // Типы и доступ к проектам. Сами данные лежат в projects.json — их правит локальный редактор (npm run editor).
 import raw from './projects.json';
 import siteRaw from './site.json';
+import responsive from './responsive-images.json';
 
 export type WallTheme = 'cartography' | 'gothic' | 'concrete' | 'sandstone' | 'sonar' | 'chrome';
 
@@ -98,3 +99,9 @@ export function asset(path: string): string {
 }
 
 export const pad2 = (n: number) => String(n).padStart(2, '0');
+
+const imageVariants=responsive as Record<string,{src:string;width:number}[]>;
+export function imageSrcSet(path:string):string|undefined {
+  return imageVariants[path]?.map(item=>`${asset(item.src)} ${item.width}w`).join(', ');
+}
+export const gallerySizes='(max-width: 1199px) calc(100vw - 40px), 1060px';

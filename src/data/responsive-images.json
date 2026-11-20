@@ -1,0 +1,54 @@
+{
+  "media/projects/piworld/shot-01.webp": [
+    {
+      "src": "media/projects/piworld/shot-01.w640.webp",
+      "width": 640
+    },
+    {
+      "src": "media/projects/piworld/shot-01.w1024.webp",
+      "width": 1024
+    },
+    {
+      "src": "media/projects/piworld/shot-01.webp",
+      "width": 1600
+    }
+  ],
+  "media/projects/build-the-pyramid/shot-01.webp": [
+    {
+      "src": "media/projects/build-the-pyramid/shot-01.w640.webp",
+      "width": 640
+    },
+    {
+      "src": "media/projects/build-the-pyramid/shot-01.w1024.webp",
+      "width": 1024
+    },
+    {
+      "src": "media/projects/build-the-pyramid/shot-01.webp",
+      "width": 1920
+    }
+  ],
+  "media/projects/hookfold-bay/key-art-wide.webp": [
+    {
+      "src": "media/projects/hookfold-bay/key-art-wide.w640.webp",
+      "width": 640
+    },
+    {
+      "src": "media/projects/hookfold-bay/key-art-wide.webp",
+      "width": 941
+    }
+  ],
+  "media/projects/colosseum/menu-background.jpg": [
+    {
+      "src": "media/projects/colosseum/menu-background.w640.webp",
+      "width": 640
+    },
+    {
+      "src": "media/projects/colosseum/menu-background.w1024.webp",
+      "width": 1024
+    },
+    {
+      "src": "media/projects/colosseum/menu-background.jpg",
+      "width": 1920
+    }
+  ]
+}
